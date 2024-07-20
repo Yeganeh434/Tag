@@ -15,6 +15,11 @@ type Tag struct {
 	Picture     string `json:"picture"`
 }
 
+type TagStatus struct {
+	ID         uint64 `json:"id"`
+	IsApproved bool   `json:"isApproved"`
+}
+
 func RegisterApprovedTag(c *gin.Context) {
 	var requestBody Tag
 	err := c.BindJSON(&requestBody)
@@ -82,7 +87,26 @@ func RegisterTagAsDraft(c *gin.Context) {
 }
 
 func ApproveOrRejectTag(c *gin.Context) {
-
+	var requestBody TagStatus
+	err := c.BindJSON(&requestBody)
+	if err != nil {
+		log.Printf("error binding JSON:%v", err)
+		c.Status(400)
+		return
+	}
+	isApproved:="rejected"
+	if requestBody.IsApproved {
+		isApproved="approved"
+	}
+	err=mysql.TagDB.UpdateTagStatus(requestBody.ID,isApproved)
+	if err!=nil {
+		log.Printf("error updating tag status:%v",err)
+		c.Status(400)
+		return
+	}
+	c.JSON(200,gin.H{
+		"message":"tag status updated seccessfully",
+	})
 }
 
 func MergeTags(c *gin.Context) {

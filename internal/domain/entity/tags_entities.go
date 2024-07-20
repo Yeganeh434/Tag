@@ -6,5 +6,5 @@ type Tag struct {
 	Description string
 	Picture     string
 	Key         string
-	Status      string
+	Status      string //approved,rejected,under_reveiw
 }
