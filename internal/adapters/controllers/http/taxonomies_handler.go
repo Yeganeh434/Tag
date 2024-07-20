@@ -41,8 +41,8 @@ func RegisterTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	c.JSON(200,gin.h{
-		"message":""
+	c.JSON(200,gin.H{
+		"message":"tags relationship registered seccussfully",
 	})
 }
 
