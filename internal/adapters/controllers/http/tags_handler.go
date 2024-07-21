@@ -13,6 +13,7 @@ type Tag struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Picture     string `json:"picture"`
+	Key         string `json:"key"`
 }
 
 type TagStatus struct {
@@ -22,9 +23,10 @@ type TagStatus struct {
 
 type TagMerge struct {
 	OriginalTagID uint64 `json:"originalTagID"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Picture     string `json:"picture"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Picture       string `json:"picture"`
+	Key           string `json:"key"`
 }
 
 func RegisterApprovedTag(c *gin.Context) {
@@ -41,18 +43,24 @@ func RegisterApprovedTag(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	key, err := usecases.GenerateKey(requestBody.Title)
-	if err != nil {
-		log.Printf("error generating key:%v", err)
+	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	if err!=nil {
+		log.Printf("error checking key existence in database:%v",err)
 		c.Status(400)
 		return
+	}
+	if flag {
+		c.JSON(400,gin.H{
+			"message":"the entered key is not available. please choose another key",
+		})
+		return 
 	}
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
 		Picture:     requestBody.Picture,
-		Key:         key,
+		Key:         requestBody.Key,
 		Status:      "approved",
 	}
 	err = mysql.TagDB.RegisterTag(tagInfo)
@@ -80,18 +88,24 @@ func RegisterTagAsDraft(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	key, err := usecases.GenerateKey(requestBody.Title)
-	if err != nil {
-		log.Printf("error generating key:%v", err)
+	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	if err!=nil {
+		log.Printf("error checking key existence in database:%v",err)
 		c.Status(400)
 		return
+	}
+	if flag {
+		c.JSON(400,gin.H{
+			"message":"the entered key is not available. please choose another key",
+		})
+		return 
 	}
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
 		Picture:     requestBody.Picture,
-		Key:         key,
+		Key:         requestBody.Key,
 		Status:      "under_review",
 	}
 	err = mysql.TagDB.RegisterTag(tagInfo)
@@ -142,18 +156,24 @@ func MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	key, err := usecases.GenerateKey(requestBody.Title)
-	if err != nil {
-		log.Printf("error generating key:%v", err)
+	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	if err!=nil {
+		log.Printf("error checking key existence in database:%v",err)
 		c.Status(400)
 		return
+	}
+	if flag {
+		c.JSON(400,gin.H{
+			"message":"the entered key is not available. please choose another key",
+		})
+		return 
 	}
 	tagInfo := entity.Tag{
 		ID:          mergeTagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
 		Picture:     requestBody.Picture,
-		Key:         key,
+		Key:         requestBody.Key,
 		Status:      "approved",
 	}
 	err = mysql.TagDB.RegisterTag(tagInfo)
@@ -162,13 +182,13 @@ func MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = mysql.TagDB.MergeTags(requestBody.OriginalTagID,tagInfo.ID)
-	if err!=nil {
+	err = mysql.TagDB.MergeTags(requestBody.OriginalTagID, tagInfo.ID)
+	if err != nil {
 		log.Printf("error merging tags:%v", err)
 		c.Status(400)
 		return
 	}
-	c.JSON(200,gin.H{
-		"message":"tags merged successfully",
+	c.JSON(200, gin.H{
+		"message": "tags merged successfully",
 	})
 }

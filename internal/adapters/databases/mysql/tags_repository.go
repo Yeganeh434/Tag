@@ -27,6 +27,9 @@ func (d *Database) MergeTags(originalTagID uint64, mergeTagID uint64) error {
 	for _, value := range firstList {
 		value.FromTag = mergeTagID
 		result = d.db.Create(&value)
+		if result.Error!=nil {
+			return result.Error
+		}
 	}
 	var secondList []entity.Taxonomy
 	result = d.db.Where("totag=?", originalTagID).Find(&secondList)
@@ -36,6 +39,21 @@ func (d *Database) MergeTags(originalTagID uint64, mergeTagID uint64) error {
 	for _, value := range secondList {
 		value.ToTag = mergeTagID
 		result = d.db.Create(&value)
+		if result.Error!=nil {
+			return result.Error
+		}
 	}
 	return nil
+}
+
+func (d *Database) DoesKeyExist (key string) (bool,error) {
+	var tag entity.Tag
+	result:=d.db.Where("key=?",key).First(&tag)
+	if result.Error!=nil {
+		return true,result.Error
+	}
+	if result.RowsAffected==0 {
+		return false,nil
+	}
+	return true,nil
 }
