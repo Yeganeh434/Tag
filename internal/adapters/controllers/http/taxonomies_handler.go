@@ -2,6 +2,7 @@ package http
 
 import (
 	"log"
+	"strconv"
 	"tag_project/internal/adapters/databases/mysql"
 	"tag_project/internal/application/usecases"
 	"tag_project/internal/domain/entity"
@@ -54,15 +55,15 @@ func RegisterTagRelationship(c *gin.Context) {
 
 func SetTagRelationship(c *gin.Context) {
 	var requestBody TagRelationship
-	err:=c.BindJSON(&requestBody)
-	if err!=nil {
-		log.Printf("error binding JSON:%v",err)
+	err := c.BindJSON(&requestBody)
+	if err != nil {
+		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
-	err=mysql.TagDB.SaveTagRelationship(requestBody.ID,requestBody.RelationshipType)
-	if err!=nil {
-		log.Printf("error saving tag relationship:%v",err)
+	err = mysql.TagDB.SaveTagRelationship(requestBody.ID, requestBody.RelationshipType)
+	if err != nil {
+		log.Printf("error saving tag relationship:%v", err)
 		c.Status(400)
 		return
 	}
@@ -72,11 +73,50 @@ func SetTagRelationship(c *gin.Context) {
 }
 
 func GetRelatedTagsByKey(c *gin.Context) {
-
+	key := c.Param("key")
+	ID, err := mysql.TagDB.GetIDByKey(key)
+	if err != nil {
+		log.Printf("error retrieving ID:%v", err)
+		c.Status(400)
+		return
+	}
+	if ID == 0 {
+		c.JSON(400, gin.H{
+			"message": "no record exists with this key",
+		})
+		return
+	}
+	IDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+	if err != nil {
+		log.Printf("error getting related tags:%v", err)
+		c.Status(400)
+		return
+	}
+	if IDs == nil {
+		c.JSON(400, gin.H{
+			"message": "no related tags exist for this tag",
+		})
+		return
+	}
+	c.JSON(200, IDs)
 }
 
 func GetRelatedTagsByID(c *gin.Context) {
-
+	id := c.Param("ID")
+	ID, _ := strconv.ParseUint(id,10,64)
+	IDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+	if err != nil {
+		log.Printf("error getting related tags:%v", err)
+		c.Status(400)
+		return
+	}
+	if IDs == nil {
+		c.JSON(400, gin.H{
+			"message": "no related tags exist for this tag",
+		})
+		return
+	}
+	c.JSON(200, IDs)
 }
 
 func SearchTagByTitle(c *gin.Context) {

@@ -19,8 +19,8 @@ func RunWebServer(port int) error {
 	//tags relationship management
 	router.POST("/register_tag_relationship", RegisterTagRelationship)
 	router.POST("/set_tag_relationship", SetTagRelationship)
-	router.POST("/get_related_tags_by_key", GetRelatedTagsByKey)
-	router.POST("/get_related_tags_by_id", GetRelatedTagsByID)
+	router.POST("/get_related_tags_by_key/:key", GetRelatedTagsByKey)
+	router.POST("/get_related_tags_by_id/:id", GetRelatedTagsByID)
 	router.POST("/search_tag_by_title", SearchTagByTitle)
 
 	err := router.Run(addr)
