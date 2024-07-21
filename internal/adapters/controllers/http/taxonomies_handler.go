@@ -120,5 +120,34 @@ func GetRelatedTagsByID(c *gin.Context) {
 }
 
 func SearchTagByTitle(c *gin.Context) {
-
+	title:=c.Param("title")
+	IDs,err:=mysql.TagDB.GetIDsByTitle(title)
+	if err!=nil {
+		log.Printf("error retrieving IDs:%v", err)
+		c.Status(400)
+		return
+	}
+	if IDs == nil {
+		c.JSON(400, gin.H{
+			"message": "no record exists with this title",
+		})
+		return
+	}
+	var relatedTagsID []uint64
+	for _,ID :=range IDs {
+		tempIDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+		if err != nil {
+			log.Printf("error getting related tags:%v", err)
+			c.Status(400)
+			return
+		}
+		relatedTagsID=append(relatedTagsID,tempIDs...)
+	}
+	if relatedTagsID==nil {
+		c.JSON(400, gin.H{
+			"message": "no related tags exist for this tag",
+		})
+		return
+	}
+	c.JSON(200, relatedTagsID)
 }

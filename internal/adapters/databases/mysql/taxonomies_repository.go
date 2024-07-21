@@ -47,3 +47,15 @@ func (d *Database) GetRelatedTagsByID (ID uint64) ([]uint64,error){
 	IDs:=append(firstList,secondList...)
 	return IDs,nil
 }
+
+func (d *Database) GetIDsByTitle(title string) ([]uint64,error) {
+	var IDs []uint64
+	result:=d.db.Where("title=?",title).Find(&IDs)
+	if result.Error !=nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected==0 {
+		return nil,nil
+	}
+	return IDs,nil
+}
