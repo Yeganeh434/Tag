@@ -20,6 +20,13 @@ type TagStatus struct {
 	IsApproved bool   `json:"isApproved"`
 }
 
+type TagMerge struct {
+	OriginalTagID uint64 `json:"originalTagID"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Picture     string `json:"picture"`
+}
+
 func RegisterApprovedTag(c *gin.Context) {
 	var requestBody Tag
 	err := c.BindJSON(&requestBody)
@@ -122,5 +129,46 @@ func ApproveOrRejectTag(c *gin.Context) {
 }
 
 func MergeTags(c *gin.Context) {
-
+	var requestBody TagMerge
+	err := c.BindJSON(&requestBody)
+	if err != nil {
+		log.Printf("error binding json:%v", err)
+		c.Status(400)
+		return
+	}
+	mergeTagID, err := usecases.GenerateID()
+	if err != nil {
+		log.Printf("error generating ID:%v", err)
+		c.Status(400)
+		return
+	}
+	key, err := usecases.GenerateKey(requestBody.Title)
+	if err != nil {
+		log.Printf("error generating key:%v", err)
+		c.Status(400)
+		return
+	}
+	tagInfo := entity.Tag{
+		ID:          mergeTagID,
+		Title:       requestBody.Title,
+		Description: requestBody.Description,
+		Picture:     requestBody.Picture,
+		Key:         key,
+		Status:      "approved",
+	}
+	err = mysql.TagDB.RegisterTag(tagInfo)
+	if err != nil {
+		log.Printf("error registering tag:%v", err)
+		c.Status(400)
+		return
+	}
+	err = mysql.TagDB.MergeTags(requestBody.OriginalTagID,tagInfo.ID)
+	if err!=nil {
+		log.Printf("error merging tags:%v", err)
+		c.Status(400)
+		return
+	}
+	c.JSON(200,gin.H{
+		"message":"tags merged successfully",
+	})
 }
