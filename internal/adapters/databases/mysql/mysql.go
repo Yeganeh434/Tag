@@ -21,9 +21,35 @@ func InitialDatabase() {
 		panic("error connecting to the database")
 	}
 	TagDB.db = gormDB
-	err=TagDB.db.AutoMigrate(&entity.Tag{}, &entity.Taxonomy{})
+	err=TagDB.db.AutoMigrate(&entity.Tag{}, &entity.Taxonomy{},&Counter{})
 	if err != nil {
 		log.Printf("error in migrating: %v", err)
 		return
 	}
+}
+
+type Counter struct{
+	Count int `gorm:"primary_key"`
+}
+
+func (d *Database) GetCounter() (int,error) {
+	var c Counter
+	result:=d.db.First(&c)
+	if result.Error!=nil {
+		return 0,result.Error
+	}
+	if result.RowsAffected==0 {
+		c.Count=1
+		result=d.db.Create(&c)
+		if result.Error!=nil{
+			return 0 ,result.Error
+		}
+		return c.Count,nil
+	}
+	c.Count+=1
+	result=d.db.Save(&c)
+	if result.Error!=nil{
+		return 0 ,result.Error
+	}
+	return c.Count,nil
 }

@@ -34,12 +34,18 @@ func RegisterApprovedTag(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	key, err := usecases.GenerateKey(requestBody.Title)
+	if err != nil {
+		log.Printf("error generating key:%v", err)
+		c.Status(400)
+		return
+	}
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
 		Picture:     requestBody.Picture,
-		Key:         "........", //////////////////////////////////////////////
+		Key:         key,
 		Status:      "approved",
 	}
 	err = mysql.TagDB.RegisterTag(tagInfo)
@@ -67,12 +73,18 @@ func RegisterTagAsDraft(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	key, err := usecases.GenerateKey(requestBody.Title)
+	if err != nil {
+		log.Printf("error generating key:%v", err)
+		c.Status(400)
+		return
+	}
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
 		Picture:     requestBody.Picture,
-		Key:         "........", //////////////////////////////////////////////
+		Key:         key,
 		Status:      "under_review",
 	}
 	err = mysql.TagDB.RegisterTag(tagInfo)
@@ -94,18 +106,18 @@ func ApproveOrRejectTag(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	isApproved:="rejected"
+	isApproved := "rejected"
 	if requestBody.IsApproved {
-		isApproved="approved"
+		isApproved = "approved"
 	}
-	err=mysql.TagDB.UpdateTagStatus(requestBody.ID,isApproved)
-	if err!=nil {
-		log.Printf("error updating tag status:%v",err)
+	err = mysql.TagDB.UpdateTagStatus(requestBody.ID, isApproved)
+	if err != nil {
+		log.Printf("error updating tag status:%v", err)
 		c.Status(400)
 		return
 	}
-	c.JSON(200,gin.H{
-		"message":"tag status updated seccessfully",
+	c.JSON(200, gin.H{
+		"message": "tag status updated seccessfully",
 	})
 }
 
