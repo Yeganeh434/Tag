@@ -43,18 +43,18 @@ func RegisterApprovedTag(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
-	if err!=nil {
-		log.Printf("error checking key existence in database:%v",err)
-		c.Status(400)
-		return
-	}
-	if flag {
-		c.JSON(400,gin.H{
-			"message":"the entered key is not available. please choose another key",
-		})
-		return 
-	}
+	// flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	// if err!=nil {
+	// 	log.Printf("error checking key existence in database:%v",err)
+	// 	c.Status(400)
+	// 	return
+	// }
+	// if flag {
+	// 	c.JSON(400,gin.H{
+	// 		"message":"the entered key is not available. please choose another key",
+	// 	})
+	// 	return 
+	// }
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
@@ -88,18 +88,18 @@ func RegisterTagAsDraft(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
-	if err!=nil {
-		log.Printf("error checking key existence in database:%v",err)
-		c.Status(400)
-		return
-	}
-	if flag {
-		c.JSON(400,gin.H{
-			"message":"the entered key is not available. please choose another key",
-		})
-		return 
-	}
+	// flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	// if err!=nil {
+	// 	log.Printf("error checking key existence in database:%v",err)
+	// 	c.Status(400)
+	// 	return
+	// }
+	// if flag {
+	// 	c.JSON(400,gin.H{
+	// 		"message":"the entered key is not available. please choose another key",
+	// 	})
+	// 	return 
+	// }
 	tagInfo := entity.Tag{
 		ID:          tagID,
 		Title:       requestBody.Title,
@@ -156,18 +156,18 @@ func MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	flag,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
-	if err!=nil {
-		log.Printf("error checking key existence in database:%v",err)
-		c.Status(400)
-		return
-	}
-	if flag {
-		c.JSON(400,gin.H{
-			"message":"the entered key is not available. please choose another key",
-		})
-		return 
-	}
+	// exists,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
+	// if err!=nil {
+	// 	log.Printf("error checking key existence in database:%v",err)
+	// 	c.Status(400)
+	// 	return
+	// }
+	// if exists {
+	// 	c.JSON(400,gin.H{
+	// 		"message":"tag key already exists",
+	// 	})
+	// 	return 
+	// }
 	tagInfo := entity.Tag{
 		ID:          mergeTagID,
 		Title:       requestBody.Title,
