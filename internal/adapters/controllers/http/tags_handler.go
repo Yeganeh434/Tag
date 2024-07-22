@@ -1,13 +1,22 @@
 package http
 
 import (
+	"errors"
 	"log"
-	"tag_project/internal/adapters/databases/mysql"
 	"tag_project/internal/application/usecases"
 	"tag_project/internal/domain/entity"
+	"tag_project/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 )
+
+type TagHandler struct {
+	usecase *usecases.TagManagementUseCase
+}
+
+func NewTagHandler(usecase *usecases.TagManagementUseCase) *TagHandler {
+	return &TagHandler{usecase: usecase}
+}
 
 type Tag struct {
 	Title       string `json:"title"`
@@ -29,7 +38,7 @@ type TagMerge struct {
 	Key           string `json:"key"`
 }
 
-func RegisterApprovedTag(c *gin.Context) {
+func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 	var requestBody Tag
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -53,7 +62,7 @@ func RegisterApprovedTag(c *gin.Context) {
 	// 	c.JSON(400,gin.H{
 	// 		"message":"the entered key is not available. please choose another key",
 	// 	})
-	// 	return 
+	// 	return
 	// }
 	tagInfo := entity.Tag{
 		ID:          tagID,
@@ -63,8 +72,20 @@ func RegisterApprovedTag(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "approved",
 	}
-	err = mysql.TagDB.RegisterTag(tagInfo)
+	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
+		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "tag key and title cannot be empty",
+			})
+			return
+		}
+		if errors.Is(err, service.ErrTagKeyAlreadyExists) {
+			c.JSON(400, gin.H{
+				"error": "tag key already exists",
+			})
+			return
+		}
 		log.Printf("error registering tag:%v", err)
 		c.Status(400)
 		return
@@ -74,7 +95,7 @@ func RegisterApprovedTag(c *gin.Context) {
 	})
 }
 
-func RegisterTagAsDraft(c *gin.Context) {
+func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 	var requestBody Tag
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -98,7 +119,7 @@ func RegisterTagAsDraft(c *gin.Context) {
 	// 	c.JSON(400,gin.H{
 	// 		"message":"the entered key is not available. please choose another key",
 	// 	})
-	// 	return 
+	// 	return
 	// }
 	tagInfo := entity.Tag{
 		ID:          tagID,
@@ -108,8 +129,20 @@ func RegisterTagAsDraft(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "under_review",
 	}
-	err = mysql.TagDB.RegisterTag(tagInfo)
+	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
+		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "tag key and title cannot be empty",
+			})
+			return
+		}
+		if errors.Is(err, service.ErrTagKeyAlreadyExists) {
+			c.JSON(400, gin.H{
+				"error": "tag key already exists",
+			})
+			return
+		}
 		log.Printf("error registering tag:%v", err)
 		c.Status(400)
 		return
@@ -119,7 +152,7 @@ func RegisterTagAsDraft(c *gin.Context) {
 	})
 }
 
-func ApproveOrRejectTag(c *gin.Context) {
+func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
 	var requestBody TagStatus
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -131,8 +164,20 @@ func ApproveOrRejectTag(c *gin.Context) {
 	if requestBody.IsApproved {
 		isApproved = "approved"
 	}
-	err = mysql.TagDB.UpdateTagStatus(requestBody.ID, isApproved)
+	err = h.usecase.UpdateTagStatus(requestBody.ID, isApproved)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
+			})
+			return
+		}
+		if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no tag exists with this ID",
+			})
+			return
+		}
 		log.Printf("error updating tag status:%v", err)
 		c.Status(400)
 		return
@@ -142,7 +187,7 @@ func ApproveOrRejectTag(c *gin.Context) {
 	})
 }
 
-func MergeTags(c *gin.Context) {
+func (h *TagHandler) MergeTags(c *gin.Context) {
 	var requestBody TagMerge
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -156,18 +201,6 @@ func MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	// exists,err:=mysql.TagDB.DoesKeyExist(requestBody.Key)
-	// if err!=nil {
-	// 	log.Printf("error checking key existence in database:%v",err)
-	// 	c.Status(400)
-	// 	return
-	// }
-	// if exists {
-	// 	c.JSON(400,gin.H{
-	// 		"message":"tag key already exists",
-	// 	})
-	// 	return 
-	// }
 	tagInfo := entity.Tag{
 		ID:          mergeTagID,
 		Title:       requestBody.Title,
@@ -176,14 +209,38 @@ func MergeTags(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "approved",
 	}
-	err = mysql.TagDB.RegisterTag(tagInfo)
+	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
+		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "tag key and title cannot be empty",
+			})
+			return
+		}
+		if errors.Is(err, service.ErrTagKeyAlreadyExists) {
+			c.JSON(400, gin.H{
+				"error": "tag key already exists",
+			})
+			return
+		}
 		log.Printf("error registering tag:%v", err)
 		c.Status(400)
 		return
 	}
-	err = mysql.TagDB.MergeTags(requestBody.OriginalTagID, tagInfo.ID)
+	err = h.usecase.MergeTags(requestBody.OriginalTagID, tagInfo.ID)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
+			})
+			return
+		}
+		if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no tag exists with this original ID",
+			})
+			return
+		}
 		log.Printf("error merging tags:%v", err)
 		c.Status(400)
 		return

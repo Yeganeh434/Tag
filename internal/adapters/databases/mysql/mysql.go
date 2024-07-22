@@ -11,7 +11,7 @@ import (
 var TagDB Database
 
 type Database struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
 func InitialDatabase() {
@@ -20,8 +20,8 @@ func InitialDatabase() {
 	if err != nil {
 		panic("error connecting to the database")
 	}
-	TagDB.db = gormDB
-	err=TagDB.db.AutoMigrate(&entity.Tag{}, &entity.Taxonomy{})
+	TagDB.DB = gormDB
+	err=TagDB.DB.AutoMigrate(&entity.Tag{}, &entity.Taxonomy{})
 	if err != nil {
 		log.Printf("error in migrating: %v", err)
 		return

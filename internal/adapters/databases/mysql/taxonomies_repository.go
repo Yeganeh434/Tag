@@ -3,7 +3,7 @@ package mysql
 import "tag_project/internal/domain/entity"
 
 func (d *Database) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
-	result := d.db.Create(&taxonomyInfo)
+	result := d.DB.Create(&taxonomyInfo)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -11,7 +11,7 @@ func (d *Database) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
 }
 
 func (d *Database) SaveTagRelationship(ID uint64, relationshipType string) error {
-	result:=d.db.Model(&entity.Taxonomy{}).Where("id=?",ID).Update("RelationshipType",relationshipType)
+	result:=d.DB.Model(&entity.Taxonomy{}).Where("id=?",ID).Update("RelationshipType",relationshipType)
 	if result.Error!=nil {
 		return result.Error
 	}
@@ -20,7 +20,7 @@ func (d *Database) SaveTagRelationship(ID uint64, relationshipType string) error
 
 func (d *Database) GetIDByKey (key string) (uint64,error) {
 	var tag entity.Tag
-	result:=d.db.Where("key=?",key).First(&tag)
+	result:=d.DB.Where("key=?",key).First(&tag)
 	if result.Error != nil {
 		return 0,result.Error
 	}
@@ -32,12 +32,12 @@ func (d *Database) GetIDByKey (key string) (uint64,error) {
 
 func (d *Database) GetRelatedTagsByID (ID uint64) ([]uint64,error){
 	var firstList []uint64
-	result:=d.db.Where("fromtag=?",ID).Find(&firstList)
+	result:=d.DB.Where("fromtag=?",ID).Find(&firstList)
 	if result.Error != nil {
 		return nil,result.Error
 	}
 	var secondList []uint64
-	result=d.db.Where("totag=?",ID).Find(&secondList)
+	result=d.DB.Where("totag=?",ID).Find(&secondList)
 	if result.Error != nil {
 		return nil,result.Error
 	}
@@ -50,7 +50,7 @@ func (d *Database) GetRelatedTagsByID (ID uint64) ([]uint64,error){
 
 func (d *Database) GetIDsByTitle(title string) ([]uint64,error) {
 	var IDs []uint64
-	result:=d.db.Where("title=?",title).Find(&IDs)
+	result:=d.DB.Where("title=?",title).Find(&IDs)
 	if result.Error !=nil {
 		return nil, result.Error
 	}

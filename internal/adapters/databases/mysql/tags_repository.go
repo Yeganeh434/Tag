@@ -1,59 +1,91 @@
 package mysql
 
-import "tag_project/internal/domain/entity"
+import (
+	"tag_project/internal/domain/entity"
+	"tag_project/internal/domain/repository"
+	"tag_project/internal/domain/service"
 
-func (d *Database) RegisterTag(tagInfo entity.Tag) error {
-	result := d.db.Create(&tagInfo)
+	"gorm.io/gorm"
+)
+
+type MySQLTagRepository struct {
+	db *gorm.DB
+}
+
+func NewMySQLTagRepository(db *gorm.DB) repository.TagRepository {
+	return &MySQLTagRepository{db: db}
+}
+
+func (r *MySQLTagRepository) RegisterTag(tagInfo entity.Tag) error {
+	result := r.db.Create(&tagInfo)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) UpdateTagStatus(ID uint64, isApproved string) error {
-	result := d.db.Model(&entity.Tag{}).Where("id=?", ID).Update("status", isApproved)
+func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string) error {
+	var tag entity.Tag
+	result := r.db.Model(&entity.Tag{}).Where("id=?", ID).Find(&tag)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected==0 {
+		return service.ErrNoTagExistsWithThisID
+	}
+
+	result = r.db.Model(&entity.Tag{}).Where("id=?", ID).Update("status", isApproved)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) MergeTags(originalTagID uint64, mergeTagID uint64) error {
+func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64) error {
+	var tag entity.Tag
+	result := r.db.Model(&entity.Tag{}).Where("id=?", originalTagID).Find(&tag)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected==0 {
+		return service.ErrNoTagExistsWithThisID
+	}
+
 	var firstList []entity.Taxonomy
-	result := d.db.Where("fromtag=?", originalTagID).Find(&firstList)
+	result = r.db.Where("from_tag=?", originalTagID).Find(&firstList)
 	if result.Error != nil {
 		return result.Error
 	}
 	for _, value := range firstList {
 		value.FromTag = mergeTagID
-		result = d.db.Create(&value)
-		if result.Error!=nil {
+		result = r.db.Create(&value)
+		if result.Error != nil {
 			return result.Error
 		}
 	}
 	var secondList []entity.Taxonomy
-	result = d.db.Where("totag=?", originalTagID).Find(&secondList)
+	result = r.db.Where("to_tag=?", originalTagID).Find(&secondList)
 	if result.Error != nil {
 		return result.Error
 	}
 	for _, value := range secondList {
 		value.ToTag = mergeTagID
-		result = d.db.Create(&value)
-		if result.Error!=nil {
+		result = r.db.Create(&value)
+		if result.Error != nil {
 			return result.Error
 		}
 	}
 	return nil
 }
 
-func (d *Database) DoesKeyExist (key string) (bool,error) {
+func (r *MySQLTagRepository) DoesKeyExist(key string) (bool, error) {
 	var tag entity.Tag
-	result:=d.db.Where("key=?",key).First(&tag)
-	if result.Error!=nil {
-		return true,result.Error
+	result := r.db.Where("`key`=?", key).Find(&tag)
+	if result.Error != nil {
+		return true, result.Error
 	}
-	if result.RowsAffected==0 {
-		return false,nil
+	if result.RowsAffected == 0 {
+		return false, nil
 	}
-	return true,nil
+	return true, nil
 }
