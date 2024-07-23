@@ -38,6 +38,12 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	if requestBody.FromTag==requestBody.ToTag {
+		c.JSON(400,gin.H{
+			"error":"a tag cannot have a relationship with itself",
+		})
+		return
+	}
 	taxonomyID, err := usecases.GenerateID()
 	if err != nil {
 		log.Printf("error generating ID:%v", err)
@@ -68,6 +74,12 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 		if errors.Is(err,service.ErrNoTagExistsWithThisID){
 			c.JSON(400,gin.H{
 				"error":"no tag exists with this from tag ID or to tag ID",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrThisRelationshipAlreadyExists){
+			c.JSON(400,gin.H{
+				"error":"this relationship already exists",
 			})
 			return
 		}

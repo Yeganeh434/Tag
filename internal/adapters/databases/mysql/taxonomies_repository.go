@@ -35,6 +35,15 @@ func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Ta
 		return service.ErrNoTagExistsWithThisID
 	}
 
+	var taxonomy entity.Taxonomy
+	result=r.db.Model(&entity.Taxonomy{}).Where("from_tag=? AND to_tag=?",taxonomyInfo.FromTag,taxonomyInfo.ToTag).Find(&taxonomy)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected != 0 {
+		return service.ErrThisRelationshipAlreadyExists
+	}
+
 	result = r.db.Create(&taxonomyInfo)
 	if result.Error != nil {
 		return result.Error

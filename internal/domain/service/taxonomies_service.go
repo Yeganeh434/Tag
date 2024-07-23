@@ -11,6 +11,7 @@ var ErrRelationshipTypeCannotBeEmpty = errors.New("relationship type cannot be e
 var ErrKeyCannotBeEmpty = errors.New("key cannot be empty")
 var ErrTitleCannotBeEmpty = errors.New("title cannot be empty")
 var ErrNoRelationExistsWithThisID=errors.New("no relation exists with this ID")
+var ErrThisRelationshipAlreadyExists=errors.New("this relationship already exists")
 
 type TaxonomyService interface {
 	RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error
