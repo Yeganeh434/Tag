@@ -15,7 +15,7 @@ type TagService interface {
 	RegisterTag(tag entity.Tag) error
 	UpdateTagStatus(ID uint64, isApproved string) error
 	MergeTags(originalTagID uint64, mergeTagID uint64) error
-	DoesKeyExist(key string) (bool, error)
+	IsKeyExist(key string) (bool, error)
 }
 
 type tagService struct {
@@ -30,7 +30,7 @@ func (s *tagService) RegisterTag(tag entity.Tag) error {
 	if tag.Key == "" || tag.Title == "" {
 		return ErrTagKeyAndTitleCannotBeEmpty
 	}
-	exists, err := s.tagRepo.DoesKeyExist(tag.Key)
+	exists, err := s.tagRepo.IsKeyExist(tag.Key)
 	if err != nil {
 		return err
 	}
@@ -57,10 +57,10 @@ func (s *tagService) MergeTags(originalTagID uint64, mergeTagID uint64) error {
 	return s.tagRepo.MergeTags(originalTagID, mergeTagID)
 }
 
-func (s *tagService) DoesKeyExist(key string) (bool, error) {
+func (s *tagService) IsKeyExist(key string) (bool, error) {
 	if key == "" {
 		return false, errors.New("key cannot be empty")
 	}
 
-	return s.tagRepo.DoesKeyExist(key)
+	return s.tagRepo.IsKeyExist(key)
 }

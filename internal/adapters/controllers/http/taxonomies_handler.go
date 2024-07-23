@@ -1,14 +1,23 @@
 package http
 
 import (
+	"errors"
 	"log"
 	"strconv"
-	"tag_project/internal/adapters/databases/mysql"
 	"tag_project/internal/application/usecases"
 	"tag_project/internal/domain/entity"
+	"tag_project/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 )
+
+type TaxonomyHandler struct {
+	usecase *usecases.TaxonomyManagementUseCase
+}
+
+func NewTaxonomyHandler(usecase *usecases.TaxonomyManagementUseCase) *TaxonomyHandler {
+	return &TaxonomyHandler{usecase: usecase}
+}
 
 type Taxonomy struct {
 	FromTag          uint64 `json:"fromTag"`
@@ -21,7 +30,7 @@ type TagRelationship struct {
 	RelationshipType string `json:"relationshipType"`
 }
 
-func RegisterTagRelationship(c *gin.Context) {
+func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 	var requestBody Taxonomy
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -42,8 +51,26 @@ func RegisterTagRelationship(c *gin.Context) {
 		RelationshipType: requestBody.RelationshipType,
 		Status:           "active",
 	}
-	err = mysql.TagDB.RegisterTagRelationship(taxonomyInfo)
+	err = h.usecase.RegisterTagRelationship(taxonomyInfo)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
+			})
+			return 
+		}
+		if errors.Is(err,service.ErrInvalidRelationshipType){
+			c.JSON(400,gin.H{
+				"error":"invalid relationship type",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrNoTagExistsWithThisID){
+			c.JSON(400,gin.H{
+				"error":"no tag exists with this from tag ID or to tag ID",
+			})
+			return
+		}
 		log.Printf("error registering tag relationship:%v", err)
 		c.Status(400)
 		return
@@ -53,7 +80,7 @@ func RegisterTagRelationship(c *gin.Context) {
 	})
 }
 
-func SetTagRelationship(c *gin.Context) {
+func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
 	var requestBody TagRelationship
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -61,8 +88,32 @@ func SetTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = mysql.TagDB.SaveTagRelationship(requestBody.ID, requestBody.RelationshipType)
+	err = h.usecase.SaveTagRelationship(requestBody.ID, requestBody.RelationshipType)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrRelationshipTypeCannotBeEmpty){
+			c.JSON(400,gin.H{
+				"error":"relationship type cannot be empty",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrInvalidRelationshipType){
+			c.JSON(400,gin.H{
+				"error":"invalid relationship type",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrNoRelationExistsWithThisID){
+			c.JSON(400,gin.H{
+				"error":"no relation exists with this ID",
+			})
+			return
+		}
 		log.Printf("error saving tag relationship:%v", err)
 		c.Status(400)
 		return
@@ -72,10 +123,16 @@ func SetTagRelationship(c *gin.Context) {
 	})
 }
 
-func GetRelatedTagsByKey(c *gin.Context) {
+func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 	key := c.Param("key")
-	ID, err := mysql.TagDB.GetIDByKey(key)
+	ID, err := h.usecase.GetIDByKey(key)
 	if err != nil {
+		if errors.Is(err,service.ErrKeyCannotBeEmpty){
+			c.JSON(400,gin.H{
+				"error":"key cannot be empty",
+			})
+			return
+		}
 		log.Printf("error retrieving ID:%v", err)
 		c.Status(400)
 		return
@@ -86,43 +143,73 @@ func GetRelatedTagsByKey(c *gin.Context) {
 		})
 		return
 	}
-	IDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+	IDs, err := h.usecase.GetRelatedTagsByID(ID)
 	if err != nil {
+		if errors.Is(err,service.ErrInvalidTagID){
+			c.JSON(400,gin.H{
+				"error":"invalid tag ID",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrNoTagExistsWithThisID){
+			c.JSON(400,gin.H{
+				"error":"no tag exists with this ID",
+			})
+			return
+		}
 		log.Printf("error getting related tags:%v", err)
 		c.Status(400)
 		return
 	}
 	if IDs == nil {
 		c.JSON(400, gin.H{
-			"message": "no related tags exist for this tag",
+			"message": "no related tags exist for this key",
 		})
 		return
 	}
 	c.JSON(200, IDs)
 }
 
-func GetRelatedTagsByID(c *gin.Context) {
+func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
 	id := c.Param("ID")
-	ID, _ := strconv.ParseUint(id,10,64)
-	IDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+	ID, _ := strconv.ParseUint(id, 10, 64)
+	IDs, err := h.usecase.GetRelatedTagsByID(ID)
 	if err != nil {
+		if errors.Is(err,service.ErrInvalidTagID){
+			c.JSON(400,gin.H{
+				"error":"invalid tag ID",
+			})
+			return
+		}
+		if errors.Is(err,service.ErrNoTagExistsWithThisID){
+			c.JSON(400,gin.H{
+				"error":"no tag exists with this ID",
+			})
+			return
+		}
 		log.Printf("error getting related tags:%v", err)
 		c.Status(400)
 		return
 	}
 	if IDs == nil {
 		c.JSON(400, gin.H{
-			"message": "no related tags exist for this tag",
+			"message": "no related tags exist for this ID",
 		})
 		return
 	}
 	c.JSON(200, IDs)
 }
 
-func SearchTagByTitle(c *gin.Context) {
-	title:=c.Param("title")
-	IDs,err:=mysql.TagDB.GetIDsByTitle(title)
-	if err!=nil {
+func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
+	title := c.Param("title")
+	IDs, err := h.usecase.GetIDsByTitle(title)
+	if err != nil {
+		if errors.Is(err,service.ErrTitleCannotBeEmpty){
+			c.JSON(400,gin.H{
+				"error":"title cannot be empty",
+			})
+			return
+		}
 		log.Printf("error retrieving IDs:%v", err)
 		c.Status(400)
 		return
@@ -134,18 +221,30 @@ func SearchTagByTitle(c *gin.Context) {
 		return
 	}
 	var relatedTagsID []uint64
-	for _,ID :=range IDs {
-		tempIDs, err := mysql.TagDB.GetRelatedTagsByID(ID)
+	for _, ID := range IDs {
+		tempIDs, err := h.usecase.GetRelatedTagsByID(ID)
 		if err != nil {
+			if errors.Is(err,service.ErrInvalidTagID){
+				c.JSON(400,gin.H{
+					"error":"invalid tag ID",
+				})
+				return
+			}
+			if errors.Is(err,service.ErrNoTagExistsWithThisID){
+				c.JSON(400,gin.H{
+					"error":"no tag exists with this ID",
+				})
+				return
+			}
 			log.Printf("error getting related tags:%v", err)
 			c.Status(400)
 			return
 		}
-		relatedTagsID=append(relatedTagsID,tempIDs...)
+		relatedTagsID = append(relatedTagsID, tempIDs...)
 	}
-	if relatedTagsID==nil {
+	if relatedTagsID == nil {
 		c.JSON(400, gin.H{
-			"message": "no related tags exist for this tag",
+			"message": "no related tags exist for this title",
 		})
 		return
 	}

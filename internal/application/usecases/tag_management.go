@@ -25,6 +25,6 @@ func (uc *TagManagementUseCase) MergeTags(originalTagID uint64, mergeTagID uint6
     return uc.tagService.MergeTags(originalTagID, mergeTagID)
 }
 
-func (uc *TagManagementUseCase) DoesKeyExist(key string) (bool, error) {
-    return uc.tagService.DoesKeyExist(key)
+func (uc *TagManagementUseCase) IsKeyExist(key string) (bool, error) {
+    return uc.tagService.IsKeyExist(key)
 }

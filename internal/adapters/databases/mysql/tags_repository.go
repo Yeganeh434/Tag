@@ -78,7 +78,7 @@ func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64) 
 	return nil
 }
 
-func (r *MySQLTagRepository) DoesKeyExist(key string) (bool, error) {
+func (r *MySQLTagRepository) IsKeyExist(key string) (bool, error) {
 	var tag entity.Tag
 	result := r.db.Where("`key`=?", key).Find(&tag)
 	if result.Error != nil {
@@ -89,3 +89,4 @@ func (r *MySQLTagRepository) DoesKeyExist(key string) (bool, error) {
 	}
 	return true, nil
 }
+

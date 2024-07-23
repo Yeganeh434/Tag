@@ -1,61 +1,123 @@
 package mysql
 
-import "tag_project/internal/domain/entity"
+import (
+	"tag_project/internal/domain/entity"
+	"tag_project/internal/domain/repository"
+	"tag_project/internal/domain/service"
 
-func (d *Database) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
-	result := d.DB.Create(&taxonomyInfo)
+	"gorm.io/gorm"
+)
+
+type MySQLTaxonomyRepository struct {
+	db *gorm.DB
+}
+
+func NewMySQLTaxonomyRepository(db *gorm.DB) repository.TaxonomyRepository {
+	return &MySQLTaxonomyRepository{db: db}
+}
+
+func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
+	var tag1 entity.Tag
+	result := r.db.Model(&entity.Tag{}).Where("ID=?", taxonomyInfo.FromTag).Find(&tag1)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return service.ErrNoTagExistsWithThisID
+	}
+
+	var tag2 entity.Tag
+	result = r.db.Model(&entity.Tag{}).Where("ID=?", taxonomyInfo.ToTag).Find(&tag2)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return service.ErrNoTagExistsWithThisID
+	}
+
+	result = r.db.Create(&taxonomyInfo)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) SaveTagRelationship(ID uint64, relationshipType string) error {
-	result:=d.DB.Model(&entity.Taxonomy{}).Where("id=?",ID).Update("RelationshipType",relationshipType)
-	if result.Error!=nil {
+func (r *MySQLTaxonomyRepository) SaveTagRelationship(ID uint64, relationshipType string) error {
+	var taxonomy entity.Taxonomy
+	result := r.db.Model(&entity.Taxonomy{}).Where("ID=?", ID).Find(&taxonomy)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return service.ErrNoRelationExistsWithThisID
+	}
+
+	result = r.db.Model(&entity.Taxonomy{}).Where("id=?", ID).Update("RelationshipType", relationshipType)
+	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) GetIDByKey (key string) (uint64,error) {
+func (r *MySQLTaxonomyRepository) GetIDByKey(key string) (uint64, error) {
 	var tag entity.Tag
-	result:=d.DB.Where("key=?",key).First(&tag)
+	result := r.db.Where("`key`=?", key).Find(&tag)
 	if result.Error != nil {
-		return 0,result.Error
+		return 0, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return 0, nil
+	}
+	return tag.ID, nil
+}
+
+func (r *MySQLTaxonomyRepository) GetRelatedTagsByID(ID uint64) ([]uint64, error) {
+	var tag entity.Tag
+	result := r.db.Model(&entity.Tag{}).Where("id=?", ID).Find(&tag)
+	if result.Error != nil {
+		return nil,result.Error
 	}
 	if result.RowsAffected==0 {
-		return 0,nil
+		return nil,service.ErrNoTagExistsWithThisID
 	}
-	return tag.ID,nil
-}
 
-func (d *Database) GetRelatedTagsByID (ID uint64) ([]uint64,error){
-	var firstList []uint64
-	result:=d.DB.Where("fromtag=?",ID).Find(&firstList)
+	var firstTaxonomy []entity.Taxonomy
+	result = r.db.Where("from_tag=?", ID).Find(&firstTaxonomy)
 	if result.Error != nil {
-		return nil,result.Error
-	}
-	var secondList []uint64
-	result=d.DB.Where("totag=?",ID).Find(&secondList)
-	if result.Error != nil {
-		return nil,result.Error
-	}
-	if len(firstList)==0 && len(secondList)==0 {
-		return nil,nil
-	}
-	IDs:=append(firstList,secondList...)
-	return IDs,nil
-}
-
-func (d *Database) GetIDsByTitle(title string) ([]uint64,error) {
-	var IDs []uint64
-	result:=d.DB.Where("title=?",title).Find(&IDs)
-	if result.Error !=nil {
 		return nil, result.Error
 	}
-	if result.RowsAffected==0 {
-		return nil,nil
+
+	var secondTaxonomy []entity.Taxonomy
+	result = r.db.Where("to_tag=?", ID).Find(&secondTaxonomy)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return IDs,nil
+
+	if len(firstTaxonomy) == 0 && len(secondTaxonomy) == 0 {
+		return nil, nil
+	}
+	var IDs []uint64
+	for _, value := range firstTaxonomy {
+		IDs = append(IDs, value.ToTag)
+	}
+	for _, value := range secondTaxonomy {
+		IDs = append(IDs, value.FromTag)
+	}
+	return IDs, nil
+}
+
+func (r *MySQLTaxonomyRepository) GetIDsByTitle(title string) ([]uint64, error) {
+	var tags []entity.Tag
+	result := r.db.Where("title=?", title).Find(&tags)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
+	var IDs []uint64
+	for _,value :=range tags {
+		IDs=append(IDs, value.ID)
+	}
+	return IDs, nil
 }

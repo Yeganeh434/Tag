@@ -18,6 +18,11 @@ func RunWebServer(port int) error {
 	tagManagementUseCase := usecases.NewTagManagementUseCase(tagService)
 	tagHandler := NewTagHandler(tagManagementUseCase)
 
+	taxonomyRepo := mysql.NewMySQLTaxonomyRepository(mysql.TagDB.DB)
+	taxonomyService := service.NewTaxonomyService(taxonomyRepo)
+	taxonomyManagementUseCase := usecases.NewTaxonomyManagementUseCase(taxonomyService)
+	taxonomyHandler := NewTaxonomyHandler(taxonomyManagementUseCase)
+
 	//tags management
 	router.POST("/register_approved_tag", tagHandler.RegisterApprovedTag)
 	router.POST("/register_tag_as_draft", tagHandler.RegisterTagAsDraft)
@@ -25,11 +30,11 @@ func RunWebServer(port int) error {
 	router.POST("/merge_tags", tagHandler.MergeTags)
 
 	//tags relationship management
-	router.POST("/register_tag_relationship", RegisterTagRelationship)
-	router.POST("/set_tag_relationship", SetTagRelationship)
-	router.POST("/get_related_tags_by_key/:key", GetRelatedTagsByKey)
-	router.POST("/get_related_tags_by_id/:id", GetRelatedTagsByID)
-	router.POST("/search_tag_by_title/:title", SearchTagByTitle)
+	router.POST("/register_tag_relationship", taxonomyHandler.RegisterTagRelationship)
+	router.POST("/set_tag_relationship", taxonomyHandler.SetTagRelationship)
+	router.GET("/get_related_tags_by_key/:key", taxonomyHandler.GetRelatedTagsByKey)
+	router.GET("/get_related_tags_by_id/:ID", taxonomyHandler.GetRelatedTagsByID)
+	router.GET("/search_tag_by_title/:title", taxonomyHandler.SearchTagByTitle)
 
 	err := router.Run(addr)
 	return err
