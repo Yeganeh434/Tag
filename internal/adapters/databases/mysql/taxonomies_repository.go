@@ -16,9 +16,10 @@ func NewMySQLTaxonomyRepository(db *gorm.DB) repository.TaxonomyRepository {
 	return &MySQLTaxonomyRepository{db: db}
 }
 
-func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
-	var tag1 entity.Tag
-	result := r.db.Model(&entity.Tag{}).Where("ID=?", taxonomyInfo.FromTag).Find(&tag1)
+func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.TaxonomyEntity) error {
+	taxonomyModel:=ConvertToTaxonomyModel(taxonomyInfo)
+	var tag1 Tag
+	result := r.db.Model(&Tag{}).Where("ID=?", taxonomyModel.FromTag).Find(&tag1)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -26,8 +27,8 @@ func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Ta
 		return service.ErrNoTagExistsWithThisID
 	}
 
-	var tag2 entity.Tag
-	result = r.db.Model(&entity.Tag{}).Where("ID=?", taxonomyInfo.ToTag).Find(&tag2)
+	var tag2 Tag
+	result = r.db.Model(&Tag{}).Where("ID=?", taxonomyModel.ToTag).Find(&tag2)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -35,8 +36,8 @@ func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Ta
 		return service.ErrNoTagExistsWithThisID
 	}
 
-	var taxonomy entity.Taxonomy
-	result=r.db.Model(&entity.Taxonomy{}).Where("from_tag=? AND to_tag=?",taxonomyInfo.FromTag,taxonomyInfo.ToTag).Find(&taxonomy)
+	var taxonomy Taxonomy
+	result=r.db.Model(&Taxonomy{}).Where("from_tag=? AND to_tag=?",taxonomyModel.FromTag,taxonomyModel.ToTag).Find(&taxonomy)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -44,7 +45,7 @@ func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Ta
 		return service.ErrThisRelationshipAlreadyExists
 	}
 
-	result = r.db.Create(&taxonomyInfo)
+	result = r.db.Create(&taxonomyModel)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -52,8 +53,8 @@ func (r *MySQLTaxonomyRepository) RegisterTagRelationship(taxonomyInfo entity.Ta
 }
 
 func (r *MySQLTaxonomyRepository) SaveTagRelationship(ID uint64, relationshipType string) error {
-	var taxonomy entity.Taxonomy
-	result := r.db.Model(&entity.Taxonomy{}).Where("ID=?", ID).Find(&taxonomy)
+	var taxonomy Taxonomy
+	result := r.db.Model(&Taxonomy{}).Where("ID=?", ID).Find(&taxonomy)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -61,7 +62,7 @@ func (r *MySQLTaxonomyRepository) SaveTagRelationship(ID uint64, relationshipTyp
 		return service.ErrNoRelationExistsWithThisID
 	}
 
-	result = r.db.Model(&entity.Taxonomy{}).Where("id=?", ID).Update("RelationshipType", relationshipType)
+	result = r.db.Model(&Taxonomy{}).Where("id=?", ID).Update("RelationshipType", relationshipType)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -69,7 +70,7 @@ func (r *MySQLTaxonomyRepository) SaveTagRelationship(ID uint64, relationshipTyp
 }
 
 func (r *MySQLTaxonomyRepository) GetIDByKey(key string) (uint64, error) {
-	var tag entity.Tag
+	var tag Tag
 	result := r.db.Where("`key`=?", key).Find(&tag)
 	if result.Error != nil {
 		return 0, result.Error
@@ -81,8 +82,8 @@ func (r *MySQLTaxonomyRepository) GetIDByKey(key string) (uint64, error) {
 }
 
 func (r *MySQLTaxonomyRepository) GetRelatedTagsByID(ID uint64) ([]uint64, error) {
-	var tag entity.Tag
-	result := r.db.Model(&entity.Tag{}).Where("id=?", ID).Find(&tag)
+	var tag Tag
+	result := r.db.Model(&Tag{}).Where("id=?", ID).Find(&tag)
 	if result.Error != nil {
 		return nil,result.Error
 	}
@@ -90,13 +91,13 @@ func (r *MySQLTaxonomyRepository) GetRelatedTagsByID(ID uint64) ([]uint64, error
 		return nil,service.ErrNoTagExistsWithThisID
 	}
 
-	var firstTaxonomy []entity.Taxonomy
+	var firstTaxonomy []Taxonomy
 	result = r.db.Where("from_tag=?", ID).Find(&firstTaxonomy)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	var secondTaxonomy []entity.Taxonomy
+	var secondTaxonomy []Taxonomy
 	result = r.db.Where("to_tag=?", ID).Find(&secondTaxonomy)
 	if result.Error != nil {
 		return nil, result.Error
@@ -116,7 +117,7 @@ func (r *MySQLTaxonomyRepository) GetRelatedTagsByID(ID uint64) ([]uint64, error
 }
 
 func (r *MySQLTaxonomyRepository) GetIDsByTitle(title string) ([]uint64, error) {
-	var tags []entity.Tag
+	var tags []Tag
 	result := r.db.Where("title=?", title).Find(&tags)
 	if result.Error != nil {
 		return nil, result.Error

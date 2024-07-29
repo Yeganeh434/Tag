@@ -50,7 +50,7 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	taxonomyInfo := entity.Taxonomy{
+	taxonomyInfo := entity.TaxonomyEntity{
 		ID:               taxonomyID,
 		FromTag:          requestBody.FromTag,
 		ToTag:            requestBody.ToTag,

@@ -13,7 +13,7 @@ func NewTagManagementUseCase(tagService service.TagService) *TagManagementUseCas
     return &TagManagementUseCase{tagService: tagService}
 }
 
-func (uc *TagManagementUseCase) RegisterTag(tag entity.Tag) error {
+func (uc *TagManagementUseCase) RegisterTag(tag entity.TagEntity) error {
     return uc.tagService.RegisterTag(tag)
 }
 

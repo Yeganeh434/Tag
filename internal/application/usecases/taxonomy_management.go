@@ -13,7 +13,7 @@ func NewTaxonomyManagementUseCase(taxonomyService service.TaxonomyService) *Taxo
     return &TaxonomyManagementUseCase{taxonomyService: taxonomyService}
 }
 
-func (uc *TaxonomyManagementUseCase) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error{
+func (uc *TaxonomyManagementUseCase) RegisterTagRelationship(taxonomyInfo entity.TaxonomyEntity) error{
 	return uc.taxonomyService.RegisterTagRelationship(taxonomyInfo)
 }
 

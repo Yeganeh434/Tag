@@ -7,12 +7,12 @@ import (
 )
 
 var ErrTagKeyAlreadyExists = errors.New("tag key already exists")
-var ErrTagKeyAndTitleCannotBeEmpty=errors.New("tag key and title cannot be empty")
-var ErrInvalidTagID=errors.New("invalid tag ID")
-var ErrNoTagExistsWithThisID=errors.New("no tag exists with this ID")
+var ErrTitleCannotBeEmpty = errors.New("tag title cannot be empty")
+var ErrInvalidTagID = errors.New("invalid tag ID")
+var ErrNoTagExistsWithThisID = errors.New("no tag exists with this ID")
 
 type TagService interface {
-	RegisterTag(tag entity.Tag) error
+	RegisterTag(tag entity.TagEntity) error
 	UpdateTagStatus(ID uint64, isApproved string) error
 	MergeTags(originalTagID uint64, mergeTagID uint64) error
 	IsKeyExist(key string) (bool, error)
@@ -26,9 +26,9 @@ func NewTagService(tagRepo repository.TagRepository) TagService {
 	return &tagService{tagRepo: tagRepo}
 }
 
-func (s *tagService) RegisterTag(tag entity.Tag) error {
+func (s *tagService) RegisterTag(tag entity.TagEntity) error {
 	if tag.Key == "" || tag.Title == "" {
-		return ErrTagKeyAndTitleCannotBeEmpty
+		return ErrTitleCannotBeEmpty
 	}
 	exists, err := s.tagRepo.IsKeyExist(tag.Key)
 	if err != nil {

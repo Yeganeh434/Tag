@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"log"
-	"tag_project/internal/domain/entity"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,7 +20,7 @@ func InitialDatabase() {
 		panic("error connecting to the database")
 	}
 	TagDB.DB = gormDB
-	err=TagDB.DB.AutoMigrate(&entity.Tag{}, &entity.Taxonomy{})
+	err = TagDB.DB.AutoMigrate(&Tag{}, &Taxonomy{})
 	if err != nil {
 		log.Printf("error in migrating: %v", err)
 		return
@@ -52,7 +51,7 @@ func InitialDatabase() {
 // 	dbHost := os.Getenv("MYSQL_HOST")
 // 	dbPort := os.Getenv("MYSQL_PORT")
 // 	dbName := os.Getenv("MYSQL_DB")
-	
+
 // 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 // 		dbUser, dbPassword, dbHost, dbPort, dbName)
 

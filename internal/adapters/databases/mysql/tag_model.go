@@ -2,7 +2,7 @@ package mysql
 
 import "tag_project/internal/domain/entity"
 
-type TagModel struct {
+type Tag struct {
 	ID          uint64 `gorm:"primary_key"`
 	Title       string
 	Description string
@@ -11,8 +11,8 @@ type TagModel struct {
 	Status      string //approved,rejected,under_reveiw
 }
 
-func ConvertToTagModel(tag entity.Tag) TagModel {
-	return TagModel{
+func ConvertToTagModel(tag entity.TagEntity) Tag{
+	return Tag{
 		ID:          tag.ID,
 		Title:       tag.Title,
 		Description: tag.Description,

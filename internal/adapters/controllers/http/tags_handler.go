@@ -52,7 +52,7 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	tagInfo := entity.Tag{
+	tagInfo := entity.TagEntity{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
@@ -62,7 +62,7 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 	}
 	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
-		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
 				"error": "tag key and title cannot be empty",
 			})
@@ -97,7 +97,7 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	tagInfo := entity.Tag{
+	tagInfo := entity.TagEntity{
 		ID:          tagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
@@ -107,7 +107,7 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 	}
 	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
-		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
 				"error": "tag key and title cannot be empty",
 			})
@@ -177,7 +177,7 @@ func (h *TagHandler) MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	tagInfo := entity.Tag{
+	tagInfo := entity.TagEntity{
 		ID:          mergeTagID,
 		Title:       requestBody.Title,
 		Description: requestBody.Description,
@@ -187,7 +187,7 @@ func (h *TagHandler) MergeTags(c *gin.Context) {
 	}
 	err = h.usecase.RegisterTag(tagInfo)
 	if err != nil {
-		if errors.Is(err, service.ErrTagKeyAndTitleCannotBeEmpty) {
+		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
 				"error": "tag key and title cannot be empty",
 			})

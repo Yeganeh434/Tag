@@ -2,7 +2,7 @@ package mysql
 
 import "tag_project/internal/domain/entity"
 
-type TaxonomyModel struct {
+type Taxonomy struct {
 	ID               uint64 `gorm:"primary_key"`
 	FromTag          uint64
 	ToTag            uint64
@@ -10,8 +10,8 @@ type TaxonomyModel struct {
 	Status           string
 }
 
-func ConvertToTaxonomyModel(taxonomy entity.Taxonomy) TaxonomyModel {
-	return TaxonomyModel{
+func ConvertToTaxonomyModel(taxonomy entity.TaxonomyEntity) Taxonomy {
+	return Taxonomy{
 		ID:               taxonomy.ID,
 		FromTag:          taxonomy.FromTag,
 		ToTag:            taxonomy.ToTag,

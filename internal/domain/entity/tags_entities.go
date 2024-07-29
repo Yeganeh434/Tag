@@ -1,6 +1,6 @@
 package entity
 
-type Tag struct {
+type TagEntity struct {
 	ID          uint64
 	Title       string
 	Description string

@@ -9,12 +9,11 @@ import (
 var ErrInvalidRelationshipType = errors.New("invalid relationship type")
 var ErrRelationshipTypeCannotBeEmpty = errors.New("relationship type cannot be empty")
 var ErrKeyCannotBeEmpty = errors.New("key cannot be empty")
-var ErrTitleCannotBeEmpty = errors.New("title cannot be empty")
 var ErrNoRelationExistsWithThisID=errors.New("no relation exists with this ID")
 var ErrThisRelationshipAlreadyExists=errors.New("this relationship already exists")
 
 type TaxonomyService interface {
-	RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error
+	RegisterTagRelationship(taxonomyInfo entity.TaxonomyEntity) error
 	SaveTagRelationship(ID uint64, relationshipType string) error
 	GetIDByKey(key string) (uint64, error)
 	GetRelatedTagsByID(ID uint64) ([]uint64, error)
@@ -29,7 +28,7 @@ func NewTaxonomyService(taxonomyRepo repository.TaxonomyRepository) TaxonomyServ
 	return &taxonomyService{taxonomyRepo: taxonomyRepo}
 }
 
-func (s *taxonomyService) RegisterTagRelationship(taxonomyInfo entity.Taxonomy) error {
+func (s *taxonomyService) RegisterTagRelationship(taxonomyInfo entity.TaxonomyEntity) error {
 	if taxonomyInfo.ID == 0 || taxonomyInfo.FromTag == 0 || taxonomyInfo.ToTag == 0 {
 		return ErrInvalidTagID
 	}

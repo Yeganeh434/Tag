@@ -1,6 +1,6 @@
 package entity
 
-type Taxonomy struct {
+type TaxonomyEntity struct {
 	ID               uint64
 	FromTag          uint64
 	ToTag            uint64
