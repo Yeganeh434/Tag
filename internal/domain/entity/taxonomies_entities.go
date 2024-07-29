@@ -1,7 +1,7 @@
 package entity
 
 type Taxonomy struct {
-	ID               uint64 `gorm:"primary_key"`
+	ID               uint64
 	FromTag          uint64
 	ToTag            uint64
 	RelationshipType string   //inclusion,key_value,synonym,antonym

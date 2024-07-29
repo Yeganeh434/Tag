@@ -13,6 +13,8 @@ func main() {
 	mysql.InitialDatabase()
 
 	flag.Parse()
+	// err := http.RunWebServer()
+
 	err := http.RunWebServer(*port)
 	if err != nil {
 		log.Printf("could not start server:%v", err)
