@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"tag_project/internal/application/usecases"
 	"tag_project/internal/domain/entity"
 	"tag_project/internal/domain/repository"
 	"tag_project/internal/domain/service"
@@ -17,11 +18,90 @@ func NewMySQLTagRepository(db *gorm.DB) repository.TagRepository {
 }
 
 func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
-	tagModel:=ConvertToTagModel(tagInfo)
-	result := r.db.Create(&tagModel)
+	tagModel := ConvertToTagModel(tagInfo)
+
+	var categoryTag Tag
+	result := r.db.Where("title=?", "categories").Find(&categoryTag)
 	if result.Error != nil {
 		return result.Error
 	}
+	if result.RowsAffected == 0 {
+		tagID, err := usecases.GenerateID()
+		if err != nil {
+			return err
+		}
+		categoryTag = Tag{
+			ID:     tagID,
+			Title:  "categories",
+			Key:    "categories",
+			Status: "approved",
+		}
+		result = r.db.Create(&categoryTag)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	var parentTag Tag
+	parentTitle:="MainNode_"+tagModel.Title
+	result = r.db.Where("title=?", parentTitle).Find(&parentTag)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		tagID, err := usecases.GenerateID()
+		if err != nil {
+			return err
+		}
+		parentTag = Tag{
+			ID:     tagID,
+			Title:  parentTitle,
+			Status: "approved",
+		}
+		result = r.db.Create(&parentTag)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		taxonomyID, err := usecases.GenerateID()
+		if err != nil {
+			return err
+		}
+		taxonomy := Taxonomy{
+			ID:               taxonomyID,
+			FromTag:          categoryTag.ID,
+			ToTag:            parentTag.ID,
+			RelationshipType: "inclusion",
+			Status:           "active",
+		}
+		result = r.db.Create(&taxonomy)
+		if result.Error != nil {
+			return result.Error
+		}
+	}
+
+	//register new tag
+	result = r.db.Create(&tagModel)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	taxonomyID, err := usecases.GenerateID()
+	if err != nil {
+		return err
+	}
+	taxonomy := Taxonomy{
+		ID:               taxonomyID,
+		FromTag:          parentTag.ID,
+		ToTag:            tagModel.ID,
+		RelationshipType: "inclusion",
+		Status:           "active",
+	}
+	result = r.db.Create(&taxonomy)
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }
 

@@ -38,9 +38,9 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	if requestBody.FromTag==requestBody.ToTag {
-		c.JSON(400,gin.H{
-			"error":"a tag cannot have a relationship with itself",
+	if requestBody.FromTag == requestBody.ToTag {
+		c.JSON(400, gin.H{
+			"error": "a tag cannot have a relationship with itself",
 		})
 		return
 	}
@@ -63,23 +63,23 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 			c.JSON(400, gin.H{
 				"error": "invalid tag ID",
 			})
-			return 
+			return
 		}
-		if errors.Is(err,service.ErrInvalidRelationshipType){
-			c.JSON(400,gin.H{
-				"error":"invalid relationship type",
+		if errors.Is(err, service.ErrInvalidRelationshipType) {
+			c.JSON(400, gin.H{
+				"error": "invalid relationship type",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrNoTagExistsWithThisID){
-			c.JSON(400,gin.H{
-				"error":"no tag exists with this from tag ID or to tag ID",
+		if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no tag exists with this from tag ID or to tag ID",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrThisRelationshipAlreadyExists){
-			c.JSON(400,gin.H{
-				"error":"this relationship already exists",
+		if errors.Is(err, service.ErrThisRelationshipAlreadyExists) {
+			c.JSON(400, gin.H{
+				"error": "this relationship already exists",
 			})
 			return
 		}
@@ -108,21 +108,21 @@ func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
 			})
 			return
 		}
-		if errors.Is(err,service.ErrRelationshipTypeCannotBeEmpty){
-			c.JSON(400,gin.H{
-				"error":"relationship type cannot be empty",
+		if errors.Is(err, service.ErrRelationshipTypeCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "relationship type cannot be empty",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrInvalidRelationshipType){
-			c.JSON(400,gin.H{
-				"error":"invalid relationship type",
+		if errors.Is(err, service.ErrInvalidRelationshipType) {
+			c.JSON(400, gin.H{
+				"error": "invalid relationship type",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrNoRelationExistsWithThisID){
-			c.JSON(400,gin.H{
-				"error":"no relation exists with this ID",
+		if errors.Is(err, service.ErrNoRelationExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no relation exists with this ID",
 			})
 			return
 		}
@@ -139,9 +139,9 @@ func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 	key := c.Param("key")
 	ID, err := h.usecase.GetIDByKey(key)
 	if err != nil {
-		if errors.Is(err,service.ErrKeyCannotBeEmpty){
-			c.JSON(400,gin.H{
-				"error":"key cannot be empty",
+		if errors.Is(err, service.ErrKeyCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "key cannot be empty",
 			})
 			return
 		}
@@ -157,15 +157,15 @@ func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 	}
 	IDs, err := h.usecase.GetRelatedTagsByID(ID)
 	if err != nil {
-		if errors.Is(err,service.ErrInvalidTagID){
-			c.JSON(400,gin.H{
-				"error":"invalid tag ID",
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrNoTagExistsWithThisID){
-			c.JSON(400,gin.H{
-				"error":"no tag exists with this ID",
+		if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no tag exists with this ID",
 			})
 			return
 		}
@@ -187,15 +187,15 @@ func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
 	ID, _ := strconv.ParseUint(id, 10, 64)
 	IDs, err := h.usecase.GetRelatedTagsByID(ID)
 	if err != nil {
-		if errors.Is(err,service.ErrInvalidTagID){
-			c.JSON(400,gin.H{
-				"error":"invalid tag ID",
+		if errors.Is(err, service.ErrInvalidTagID) {
+			c.JSON(400, gin.H{
+				"error": "invalid tag ID",
 			})
 			return
 		}
-		if errors.Is(err,service.ErrNoTagExistsWithThisID){
-			c.JSON(400,gin.H{
-				"error":"no tag exists with this ID",
+		if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+			c.JSON(400, gin.H{
+				"error": "no tag exists with this ID",
 			})
 			return
 		}
@@ -255,10 +255,32 @@ func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
 		relatedTagsID = append(relatedTagsID, tempIDs...)
 	}
 	if relatedTagsID == nil {
-		c.JSON(400, gin.H{
+		c.JSON(200, gin.H{
 			"message": "no related tags exist for this title",
 		})
 		return
 	}
 	c.JSON(200, relatedTagsID)
+}
+
+func (h *TaxonomyHandler) GetTagsWithSameTitle(c *gin.Context) {
+	title:=c.Param("title")
+	IDs,err:=h.usecase.GetTagsWithSameTitle(title)
+	if err!=nil {
+		if errors.Is(err,service.ErrTitleCannotBeEmpty){
+			c.JSON(400,gin.H{
+				"error":"title cannot be empty",
+			})
+			return
+		}
+		log.Printf("error getting related tags:%v", err)
+		c.Status(400)
+		return
+	}
+	if IDs==nil {
+		c.JSON(200,gin.H{
+			"message":"no tags exist with this title",
+		})
+	}
+	c.JSON(200,IDs)
 }

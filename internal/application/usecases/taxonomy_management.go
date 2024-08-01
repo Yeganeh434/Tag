@@ -32,3 +32,7 @@ func (uc *TaxonomyManagementUseCase)GetRelatedTagsByID(ID uint64) ([]uint64, err
 func (uc *TaxonomyManagementUseCase)GetIDsByTitle(title string) ([]uint64, error){
 	return uc.taxonomyService.GetIDsByTitle(title)
 }
+
+func (uc *TaxonomyManagementUseCase)GetTagsWithSameTitle(title string) ([]uint64, error){
+	return uc.taxonomyService.GetTagsWithSameTitle(title)
+}

@@ -10,4 +10,5 @@ type TaxonomyRepository interface {
 	GetIDByKey(key string) (uint64, error)
 	GetRelatedTagsByID(ID uint64) ([]uint64, error)
 	GetIDsByTitle(title string) ([]uint64, error)
+	GetTagsWithSameTitle(title string) ([]uint64, error)
 }

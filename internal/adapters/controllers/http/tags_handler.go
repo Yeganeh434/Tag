@@ -64,7 +64,7 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
-				"error": "tag key and title cannot be empty",
+				"error": "tag title cannot be empty",
 			})
 			return
 		}
@@ -109,7 +109,7 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
-				"error": "tag key and title cannot be empty",
+				"error": "tag title cannot be empty",
 			})
 			return
 		}
@@ -189,7 +189,7 @@ func (h *TagHandler) MergeTags(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
-				"error": "tag key and title cannot be empty",
+				"error": "tag title cannot be empty",
 			})
 			return
 		}

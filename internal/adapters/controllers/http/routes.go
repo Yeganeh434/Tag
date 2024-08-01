@@ -35,6 +35,7 @@ func RunWebServer(port int) error {
 	router.GET("/get_related_tags_by_key/:key", taxonomyHandler.GetRelatedTagsByKey)
 	router.GET("/get_related_tags_by_id/:ID", taxonomyHandler.GetRelatedTagsByID)
 	router.GET("/search_tag_by_title/:title", taxonomyHandler.SearchTagByTitle)
+	router.GET("/get_tags_with_same_title/:title", taxonomyHandler.GetTagsWithSameTitle)
 
 	err := router.Run(addr)
 	// err := router.Run(":8080")

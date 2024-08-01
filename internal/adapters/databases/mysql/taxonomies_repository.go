@@ -131,3 +131,38 @@ func (r *MySQLTaxonomyRepository) GetIDsByTitle(title string) ([]uint64, error) 
 	}
 	return IDs, nil
 }
+
+func (r *MySQLTaxonomyRepository) GetTagsWithSameTitle(title string) ([]uint64,error) {
+	var categoryTag Tag
+	result:=r.db.Where("title=?","categories").Find(&categoryTag)
+	if result.Error != nil {
+		return nil,result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil,nil
+	}
+
+	var parentTag Tag
+	parentTitle:="MainNode_"+title
+	result=r.db.Where("title=?",parentTitle).Find(&parentTag)
+	if result.Error != nil {
+		return nil,result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil,nil
+	}
+
+	var childsTag []Taxonomy
+	result=r.db.Where("from_tag=?",parentTag.ID).Find(&childsTag)
+	if result.Error != nil {
+		return nil,result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil,nil
+	}
+	var IDs []uint64
+	for _,value :=range childsTag {
+		IDs=append(IDs, value.ID)
+	}
+	return IDs,nil
+}

@@ -27,15 +27,17 @@ func NewTagService(tagRepo repository.TagRepository) TagService {
 }
 
 func (s *tagService) RegisterTag(tag entity.TagEntity) error {
-	if tag.Key == "" || tag.Title == "" {
+	if tag.Title == "" {
 		return ErrTitleCannotBeEmpty
 	}
-	exists, err := s.tagRepo.IsKeyExist(tag.Key)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return ErrTagKeyAlreadyExists
+	if tag.Key != "" {
+		exists, err := s.tagRepo.IsKeyExist(tag.Key)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return ErrTagKeyAlreadyExists
+		}
 	}
 
 	return s.tagRepo.RegisterTag(tag)

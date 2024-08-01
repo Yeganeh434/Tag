@@ -18,6 +18,7 @@ type TaxonomyService interface {
 	GetIDByKey(key string) (uint64, error)
 	GetRelatedTagsByID(ID uint64) ([]uint64, error)
 	GetIDsByTitle(title string) ([]uint64, error)
+	GetTagsWithSameTitle(title string) ([]uint64, error)
 }
 
 type taxonomyService struct {
@@ -78,3 +79,13 @@ func (s *taxonomyService) GetIDsByTitle(title string) ([]uint64, error) {
 
 	return s.taxonomyRepo.GetIDsByTitle(title)
 }
+
+func (s *taxonomyService) GetTagsWithSameTitle(title string) ([]uint64, error) {
+	if title == "" {
+		return nil, ErrTitleCannotBeEmpty
+	}
+
+	return s.taxonomyRepo.GetTagsWithSameTitle(title)
+}
+
+
