@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tag management</title>
+        <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+        <div id="container">
+        <h1>Tag Management</h1>
+
+        <div id="mainPage">
+            <button class="top" id="register_approved_tag_button">register approved tag</button>
+            <button class="top" id="register_tag_as_draft_button">register tag as draft</button>
+            <button class="top" id="approve_or_reject_tag_button">approve or reject tag</button>
+            <button class="middle" id="merge_tags_button">merge tags</button>
+            <button class="middle" id="register_tag_relationship_button">register tag relationship</button>
+            <button class="middle" id="set_tag_relationship_button">set tag relationship</button>
+            <button class="bottom" id="get_related_tags_by_key_button">get related tags by key</button>
+            <button class="bottom" id="get_related_tags_by_ID_button">get related tags by id</button>
+            <button class="bottom" id="get_related_tags_by_title_button">search tag by title</button>
+        </div>
+
+        <div id="register_approved_tag" class="hidden">
+            <form id="reg_a_form">
+                <label for="reg_a_title">title:</label><br>
+                <input name="reg_a_title" id="reg_a_title" type="text" require>
+                <br><br>
+                <label for="reg_a_description">description:</label><br>
+                <input name="reg_a_description" id="reg_a_description" type="text">
+                <br><br>
+                <label for="reg_a_key">key:</label><br>
+                <input name="reg_a_key" id="reg_a_key" type="text">
+                <br><br>
+                <label for="reg_a_picture">choose picture:</label><br>
+                <input name="reg_a_picture" id="reg_a_picture" type="file">
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="register_tag_as_draft" class="hidden">
+            <form id="reg_d_form">
+                <label for="reg_d_title">title:</label><br>
+                <input type="text" name="reg_d_title" id="reg_d_title">
+                <br><br>
+                <label for="reg_d_description">description:</label><br>
+                <input name="reg_d_description" id="reg_d_description" type="text">
+                <br><br>
+                <label for="reg_d_key">key:</label><br>
+                <input name="reg_d_key" id="reg_d_key" type="text">
+                <br><br>
+                <label for="reg_d_picture">choose picture:</label><br>
+                <input name="reg_d_picture" id="reg_d_picture" type="file">
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="approve_or_reject_tag" class="hidden">
+            <form id="ap_or_rej_form">
+                <label for="ap_or_rej_ID">tag ID:</label><br>
+                <input type="text" name="ap_or_rej_ID" id="ap_or_rej_ID">
+                <br><br>
+                <p id="p1">select status of tag:</p>
+                <input name="approved_status" id="approved_status" type="radio" value="approved">
+                <label for="approved_status">approved</label>
+                <br>
+                <input name="rejected_status" id="rejected_status" type="radio" value="rejected">
+                <label for="rejected_status">rejected</label>
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="merge_tags" class="hidden">
+            <form id="merge_form">
+                <label for="merge_ID">enter the ID of the tag you want to merge the new tag with:</label><br>
+                <input type="text" name="merge_ID" id="merge_ID">
+                <br><br>
+                <label for="merge_title">title:</label><br>
+                <input type="text" name="merge_title" id="merge_title">
+                <br><br>
+                <label for="merge_description">description:</label><br>
+                <input name="merge_description" id="merge_description" type="text">
+                <br><br>
+                <label for="merge_key">key:</label><br>
+                <input name="merge_key" id="merge_key" type="text">
+                <br><br>
+                <label for="merge_picture">choose picture:</label><br>
+                <input name="merge_picture" id="merge_picture" type="file">
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="register_tag_relationship" class="hidden">
+            <form id="reg_rel_form">
+                <label for="reg_rel_fromTag">from tag ID:</label><br>
+                <input name="reg_rel_fromTag" id="reg_rel_fromTag" type="text" require>
+                <br><br>
+                <label for="reg_rel_toTag">to tag ID:</label><br>
+                <input name="reg_rel_toTag" id="reg_rel_toTag" type="text">
+                <br><br>
+                <label for="reg_rel_type">relationship type:</label><br>
+                <input name="reg_rel_type" id="reg_rel_type" type="text">
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="set_tag_relationship" class="hidden">
+            <form id="set_rel_form">
+                <label for="set_rel_ID">taxonomy ID:</label><br>
+                <input type="text" name="set_rel_ID" id="set_rel_ID">
+                <br><br>
+                <label for="set_rel_type">relationship type:</label><br>
+                <input name="set_rel_type" id="set_rel_type" type="text">
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="get_related_tags_by_key" class="hidden">
+            <form id="by_key_form">
+                <label for="by_key">key:</label><br>
+                <input name="by_key" id="by_key" type="text">
+                <br><br>
+                <div id="responseMessage_key" class="responseMessage"></div>
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="get_related_tags_by_ID" class="hidden">
+            <form id="by_ID_form">
+                <label for="by_ID">tag ID:</label><br>
+                <input name="by_ID" id="by_ID" type="text">
+                <br><br>
+                <div id="responseMessage_ID" class="responseMessage"></div>
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <div id="get_related_tags_by_title" class="hidden">
+            <form id="by_title_form">
+                <label for="by_title">title:</label><br>
+                <input name="by_title" id="by_title" type="text">
+                <br><br>
+                <div id="responseMessage_title" class="responseMessage"></div>
+                <br><br>
+                <button type="submit" class="submit">submit</button>
+            </form>
+        </div>
+
+        <!-- <div id="responseMessage"></div> -->
+        </div>
+        <script src="/static/script.js"></script>
+    </body>
+</html>

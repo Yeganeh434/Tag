@@ -13,6 +13,14 @@ func RunWebServer(port int) error {
 	addr := ":" + strconv.Itoa(port)
 	router := gin.New()
 
+	// router.StaticFile("/", "E:/tag_proj/static")
+	// router.StaticFile("/", "../tag_proj/static")
+
+	router.Static("/static", "./static")
+    router.GET("/", func(c *gin.Context) {
+        c.File("./static/index.html")
+    })
+
 	tagRepo := mysql.NewMySQLTagRepository(mysql.TagDB.DB)
 	tagService := service.NewTagService(tagRepo)
 	tagManagementUseCase := usecases.NewTagManagementUseCase(tagService)

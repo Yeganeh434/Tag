@@ -1,0 +1,235 @@
+.hidden { 
+    display: none !important; 
+}
+ 
+/* html{
+    background-color:#f0f0f0 ;
+    background-color: #e0ded5;
+}
+
+h1 {
+    height: 20vh; 
+    margin: 0; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color:#ede8d0 ; 
+    background-color: rgb(18, 98, 18);
+    font-size: 2em; 
+    text-align: center; 
+}
+
+
+#mainPage {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-around; 
+    gap: 15px;
+    padding: 20px; 
+}
+
+
+button {
+    background-color: #4CAF50;
+    border: none; 
+    color: white;
+    padding: 15px 20px; 
+    font-size: 16px; 
+    cursor: pointer; 
+    border-radius: 8px;
+    width: 200px;
+    height: 50px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    transition: background-color 0.3s, transform 0.2s;  
+}
+
+button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px); 
+}
+
+button:active {
+    background-color: #3e8e41; 
+    transform: translateY(2px); 
+} */
+
+
+
+
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image:url("pic7.png");
+    background-size: cover; /* تصویر را به طور کامل برای پوشش صفحه تغییر اندازه می‌دهد */
+    background-repeat: no-repeat; /* از تکرار تصویر جلوگیری می‌کند */
+    background-position: center center; /* تصویر را در مرکز صفحه قرار می‌دهد */
+    background-attachment: fixed; /* تصویر پس‌زمینه ثابت باقی می‌ماند حتی در صورت اسکرول */   
+}
+
+#container {
+    width: 80%;
+    height: 80%;
+    background-color: #e0ebeb;
+    border-radius: 20px;
+    padding: 1%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative; /* این خط را اضافه کنید */
+}
+
+h1 {
+    width: 100%;
+    height: 20%;
+    margin: 0;
+    /* background-color:#B60071; */
+    background-color: #00004d;
+    color: #e0ebeb;
+    text-align: center;
+    line-height: 20vh;
+    box-sizing: border-box;
+    border-radius: 15px;
+    font-size: 38px;
+}
+
+
+
+#mainPage {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 20px; /* افزایش فاصله بین دکمه‌ها */
+    padding: 20px; /* افزایش فاصله بین دکمه‌ها و لبه‌های container */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    width: 90%; /* کاهش عرض دکمه‌ها */
+    height: 90%; /* کاهش ارتفاع دکمه‌ها */
+    font-size: 14px; /* کاهش اندازه فونت دکمه‌ها */
+    cursor: pointer;
+    justify-self: center; /* مرکز کردن دکمه‌ها در سلول‌های grid */
+    align-self: center;
+    border-color: #e0ebeb;
+    border-radius: 10px;
+    color:#00004d;
+    font-size: 18px;
+}
+
+.top{
+    /* background-color:#F0EAAC ; */
+    /* background-color:#F6E96B ; */
+    background-color: #D8EFD3;
+}
+
+.middle{
+    /* background-color: #CCE0AC; */
+    background-color: #95D2B3;
+
+}
+
+.bottom{
+    /* background-color: #D1E9F6; */
+    background-color: #55AD9B;
+
+}
+
+
+#register_approved_tag{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#register_tag_as_draft{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#approve_or_reject_tag{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#merge_tags{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#register_tag_relationship{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#set_tag_relationship{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#get_related_tags_by_key{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#get_related_tags_by_ID{
+    margin-top:20px;
+    margin-left: 40px;
+}
+
+#get_related_tags_by_title{
+    margin-left: 40px;
+    margin-top:20px;
+}
+
+#p1{
+    color:#00004d;
+    font-size: 20px;
+}
+
+#approved_status{
+    width:15px;
+    height:15px;
+}
+
+#rejected_status{
+    width:15px;
+    height:15px;
+}
+
+.responseMessage{
+    color:#00004d;
+    font-size: 20px;
+}
+
+.submit {
+    background-color:#55AD9B;
+    height:40px;
+    font-size: 20px;
+    font-weight: bold;
+    position: absolute; /* این خط را اضافه کنید */
+    bottom: 20px; /* فاصله 20 پیکسل از پایین */
+}
+
+label{
+    color:#00004d;
+    font-size: 20px;
+}
+
+input{
+    /* font-size: 20px; */
+    width:300px;
+    height:20px;
+}
+
+
+
+
+

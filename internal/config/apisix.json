@@ -1,0 +1,113 @@
+{
+    "routes":[
+        {
+            "id":11,
+            "uri": "/register_approved_tag",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":12,
+            "uri": "/register_tag_as_draft",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":13,
+            "uri": "/approve_or_reject_tag",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":14,
+            "uri": "/merge_tags",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":15,
+            "uri": "/register_tag_relationship",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":16,
+            "uri": "/set_tag_relationship",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":17,
+            "uri": "/get_related_tags_by_key/*",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":18,
+            "uri": "/get_related_tags_by_id/*",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,
+        {
+            "id":19,
+            "uri": "/search_tag_by_title/*",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+        ,    
+        {
+            "id":20,
+            "uri": "/get_tags_with_same_title/*",
+            "upstream": {
+                "type": "roundrobin",
+                "nodes": {
+                    "192.168.1.102:8080": 1
+                }
+            }
+        }
+    ]
+}
