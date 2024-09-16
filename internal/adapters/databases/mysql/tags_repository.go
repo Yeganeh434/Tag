@@ -1,11 +1,14 @@
 package mysql
 
 import (
+	"context"
 	"tag_project/internal/application/usecases"
+	"tag_project/internal/config"
 	"tag_project/internal/domain/entity"
 	"tag_project/internal/domain/repository"
 	"tag_project/internal/domain/service"
 
+	// "go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -17,11 +20,14 @@ func NewMySQLTagRepository(db *gorm.DB) repository.TagRepository {
 	return &MySQLTagRepository{db: db}
 }
 
-func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
+func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity, ctx context.Context) error {
+	ctx, span := config.Tracer.Start(ctx, "RegisterTag_database")
+	defer span.End()
+
 	tagModel := ConvertToTagModel(tagInfo)
 
 	var categoryTag Tag
-	result := r.db.Where("title=?", "categories").Find(&categoryTag)
+	result := r.db.WithContext(ctx).Where("title=?", "categories").Find(&categoryTag)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -43,8 +49,8 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
 	}
 
 	var parentTag Tag
-	parentTitle:="MainNode_"+tagModel.Title
-	result = r.db.Where("title=?", parentTitle).Find(&parentTag)
+	parentTitle := "MainNode_" + tagModel.Title
+	result = r.db.WithContext(ctx).Where("title=?", parentTitle).Find(&parentTag)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -58,7 +64,7 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
 			Title:  parentTitle,
 			Status: "approved",
 		}
-		result = r.db.Create(&parentTag)
+		result = r.db.WithContext(ctx).Create(&parentTag)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -74,14 +80,14 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
 			RelationshipType: "inclusion",
 			Status:           "active",
 		}
-		result = r.db.Create(&taxonomy)
+		result = r.db.WithContext(ctx).Create(&taxonomy)
 		if result.Error != nil {
 			return result.Error
 		}
 	}
 
 	//register new tag
-	result = r.db.Create(&tagModel)
+	result = r.db.WithContext(ctx).Create(&tagModel)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -97,7 +103,7 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
 		RelationshipType: "inclusion",
 		Status:           "active",
 	}
-	result = r.db.Create(&taxonomy)
+	result = r.db.WithContext(ctx).Create(&taxonomy)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -105,9 +111,12 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity) error {
 	return nil
 }
 
-func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string) error {
+func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string,ctx context.Context) error {
+	ctx,span:=config.Tracer.Start(ctx,"UpdateTagStatus_database")
+	defer span.End()
+
 	var tag Tag
-	result := r.db.Model(&Tag{}).Where("id=?", ID).Find(&tag)
+	result := r.db.WithContext(ctx).Model(&Tag{}).Where("id=?", ID).Find(&tag)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -115,16 +124,19 @@ func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string) error
 		return service.ErrNoTagExistsWithThisID
 	}
 
-	result = r.db.Model(&Tag{}).Where("id=?", ID).Update("status", isApproved)
+	result = r.db.WithContext(ctx).Model(&Tag{}).Where("id=?", ID).Update("status", isApproved)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64) error {
+func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64,ctx context.Context) error {
+	ctx,span:=config.Tracer.Start(ctx,"MergeTags_database")
+	span.End()
+
 	var tag Tag
-	result := r.db.Model(&Tag{}).Where("id=?", originalTagID).Find(&tag)
+	result := r.db.WithContext(ctx).Model(&Tag{}).Where("id=?", originalTagID).Find(&tag)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -133,25 +145,25 @@ func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64) 
 	}
 
 	var firstList []Taxonomy
-	result = r.db.Where("from_tag=?", originalTagID).Find(&firstList)
+	result = r.db.WithContext(ctx).Where("from_tag=?", originalTagID).Find(&firstList)
 	if result.Error != nil {
 		return result.Error
 	}
 	for _, value := range firstList {
 		value.FromTag = mergeTagID
-		result = r.db.Create(&value)
+		result = r.db.WithContext(ctx).Create(&value)
 		if result.Error != nil {
 			return result.Error
 		}
 	}
 	var secondList []Taxonomy
-	result = r.db.Where("to_tag=?", originalTagID).Find(&secondList)
+	result = r.db.WithContext(ctx).Where("to_tag=?", originalTagID).Find(&secondList)
 	if result.Error != nil {
 		return result.Error
 	}
 	for _, value := range secondList {
 		value.ToTag = mergeTagID
-		result = r.db.Create(&value)
+		result = r.db.WithContext(ctx).Create(&value)
 		if result.Error != nil {
 			return result.Error
 		}
@@ -159,9 +171,12 @@ func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64) 
 	return nil
 }
 
-func (r *MySQLTagRepository) IsKeyExist(key string) (bool, error) {
+func (r *MySQLTagRepository) IsKeyExist(key string,ctx context.Context) (bool, error) {
+	ctx,span:=config.Tracer.Start(ctx,"IsKeyExist_database")
+	span.End()
+
 	var tag Tag
-	result := r.db.Where("`key`=?", key).Find(&tag)
+	result := r.db.WithContext(ctx).Where("`key`=?", key).Find(&tag)
 	if result.Error != nil {
 		return true, result.Error
 	}

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"tag_project/internal/domain/entity"
 	"tag_project/internal/domain/repository"
@@ -12,10 +13,10 @@ var ErrInvalidTagID = errors.New("invalid tag ID")
 var ErrNoTagExistsWithThisID = errors.New("no tag exists with this ID")
 
 type TagService interface {
-	RegisterTag(tag entity.TagEntity) error
-	UpdateTagStatus(ID uint64, isApproved string) error
-	MergeTags(originalTagID uint64, mergeTagID uint64) error
-	IsKeyExist(key string) (bool, error)
+	RegisterTag(tag entity.TagEntity,ctx context.Context) error
+	UpdateTagStatus(ID uint64, isApproved string,ctx context.Context) error
+	MergeTags(originalTagID uint64, mergeTagID uint64,ctx context.Context) error
+	IsKeyExist(key string,ctx context.Context) (bool, error)
 }
 
 type tagService struct {
@@ -26,12 +27,12 @@ func NewTagService(tagRepo repository.TagRepository) TagService {
 	return &tagService{tagRepo: tagRepo}
 }
 
-func (s *tagService) RegisterTag(tag entity.TagEntity) error {
+func (s *tagService) RegisterTag(tag entity.TagEntity,ctx context.Context) error {
 	if tag.Title == "" {
 		return ErrTitleCannotBeEmpty
 	}
 	if tag.Key != "" {
-		exists, err := s.tagRepo.IsKeyExist(tag.Key)
+		exists, err := s.tagRepo.IsKeyExist(tag.Key,ctx)
 		if err != nil {
 			return err
 		}
@@ -40,29 +41,29 @@ func (s *tagService) RegisterTag(tag entity.TagEntity) error {
 		}
 	}
 
-	return s.tagRepo.RegisterTag(tag)
+	return s.tagRepo.RegisterTag(tag,ctx)
 }
 
-func (s *tagService) UpdateTagStatus(ID uint64, isApproved string) error {
+func (s *tagService) UpdateTagStatus(ID uint64, isApproved string,ctx context.Context) error {
 	if ID == 0 {
 		return ErrInvalidTagID
 	}
 
-	return s.tagRepo.UpdateTagStatus(ID, isApproved)
+	return s.tagRepo.UpdateTagStatus(ID, isApproved,ctx)
 }
 
-func (s *tagService) MergeTags(originalTagID uint64, mergeTagID uint64) error {
+func (s *tagService) MergeTags(originalTagID uint64, mergeTagID uint64,ctx context.Context) error {
 	if originalTagID == 0 || mergeTagID == 0 {
 		return ErrInvalidTagID
 	}
 
-	return s.tagRepo.MergeTags(originalTagID, mergeTagID)
+	return s.tagRepo.MergeTags(originalTagID, mergeTagID,ctx)
 }
 
-func (s *tagService) IsKeyExist(key string) (bool, error) {
+func (s *tagService) IsKeyExist(key string,ctx context.Context) (bool, error) {
 	if key == "" {
 		return false, errors.New("key cannot be empty")
 	}
 
-	return s.tagRepo.IsKeyExist(key)
+	return s.tagRepo.IsKeyExist(key,ctx)
 }

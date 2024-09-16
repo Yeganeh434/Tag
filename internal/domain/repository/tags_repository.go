@@ -1,12 +1,13 @@
 package repository
 
 import (
-    "tag_project/internal/domain/entity"
+	"context"
+	"tag_project/internal/domain/entity"
 )
 
 type TagRepository interface {
-    RegisterTag(tag entity.TagEntity) error
-    UpdateTagStatus(ID uint64, isApproved string) error
-    MergeTags(originalTagID uint64, mergeTagID uint64) error
-    IsKeyExist(key string) (bool, error)
+    RegisterTag(tag entity.TagEntity,ctx context.Context) error
+    UpdateTagStatus(ID uint64, isApproved string,ctx context.Context) error
+    MergeTags(originalTagID uint64, mergeTagID uint64,ctx context.Context) error
+    IsKeyExist(key string,ctx context.Context) (bool, error)
 }
