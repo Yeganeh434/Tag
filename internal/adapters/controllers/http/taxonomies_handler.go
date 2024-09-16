@@ -1,10 +1,12 @@
 package http
 
 import (
+	"context"
 	"errors"
 	"log"
 	"strconv"
 	"tag_project/internal/application/usecases"
+	"tag_project/internal/config"
 	"tag_project/internal/domain/entity"
 	"tag_project/internal/domain/service"
 
@@ -31,6 +33,10 @@ type TagRelationship struct {
 }
 
 func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
+	ctx := context.Background()
+	ctx, span := config.Tracer.Start(ctx, "RegisterTagRelationship_handler")
+	defer span.End()
+
 	var requestBody Taxonomy
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -57,7 +63,7 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 		RelationshipType: requestBody.RelationshipType,
 		Status:           "active",
 	}
-	err = h.usecase.RegisterTagRelationship(taxonomyInfo)
+	err = h.usecase.RegisterTagRelationship(taxonomyInfo,ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{
@@ -93,6 +99,10 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
+	ctx:=context.Background()
+	ctx,span:=config.Tracer.Start(ctx,"SetTagRelationship_handler")
+	defer span.End()
+
 	var requestBody TagRelationship
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -100,7 +110,7 @@ func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = h.usecase.SaveTagRelationship(requestBody.ID, requestBody.RelationshipType)
+	err = h.usecase.SaveTagRelationship(requestBody.ID, requestBody.RelationshipType,ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{
@@ -136,8 +146,12 @@ func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
+	ctx:=context.Background()
+	ctx,span:=config.Tracer.Start(ctx,"GetRelatedTagsByKey_handler")
+	defer span.End()
+
 	key := c.Param("key")
-	ID, err := h.usecase.GetIDByKey(key)
+	ID, err := h.usecase.GetIDByKey(key,ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrKeyCannotBeEmpty) {
 			c.JSON(400, gin.H{
@@ -155,7 +169,7 @@ func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 		})
 		return
 	}
-	IDs, err := h.usecase.GetRelatedTagsByID(ID)
+	IDs, err := h.usecase.GetRelatedTagsByID(ID,ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{
@@ -183,9 +197,13 @@ func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
+	ctx:=context.Background()
+	ctx,span:=config.Tracer.Start(ctx,"GetRelatedTagsByID_handler")
+	defer span.End()
+
 	id := c.Param("ID")
 	ID, _ := strconv.ParseUint(id, 10, 64)
-	IDs, err := h.usecase.GetRelatedTagsByID(ID)
+	IDs, err := h.usecase.GetRelatedTagsByID(ID,ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{
@@ -213,12 +231,16 @@ func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
+	ctx:=context.Background()
+	ctx,span:=config.Tracer.Start(ctx,"SearchTagByTitle_handler")
+	defer span.End()
+
 	title := c.Param("title")
-	IDs, err := h.usecase.GetIDsByTitle(title)
+	IDs, err := h.usecase.GetIDsByTitle(title,ctx)
 	if err != nil {
-		if errors.Is(err,service.ErrTitleCannotBeEmpty){
-			c.JSON(400,gin.H{
-				"error":"title cannot be empty",
+		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "title cannot be empty",
 			})
 			return
 		}
@@ -234,17 +256,17 @@ func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
 	}
 	var relatedTagsID []uint64
 	for _, ID := range IDs {
-		tempIDs, err := h.usecase.GetRelatedTagsByID(ID)
+		tempIDs, err := h.usecase.GetRelatedTagsByID(ID,ctx)
 		if err != nil {
-			if errors.Is(err,service.ErrInvalidTagID){
-				c.JSON(400,gin.H{
-					"error":"invalid tag ID",
+			if errors.Is(err, service.ErrInvalidTagID) {
+				c.JSON(400, gin.H{
+					"error": "invalid tag ID",
 				})
 				return
 			}
-			if errors.Is(err,service.ErrNoTagExistsWithThisID){
-				c.JSON(400,gin.H{
-					"error":"no tag exists with this ID",
+			if errors.Is(err, service.ErrNoTagExistsWithThisID) {
+				c.JSON(400, gin.H{
+					"error": "no tag exists with this ID",
 				})
 				return
 			}
@@ -264,12 +286,16 @@ func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetTagsWithSameTitle(c *gin.Context) {
-	title:=c.Param("title")
-	IDs,err:=h.usecase.GetTagsWithSameTitle(title)
-	if err!=nil {
-		if errors.Is(err,service.ErrTitleCannotBeEmpty){
-			c.JSON(400,gin.H{
-				"error":"title cannot be empty",
+	ctx:=context.Background()
+	ctx,span:=config.Tracer.Start(ctx,"GetTagsWithSameTitle_handler")
+	defer span.End()
+
+	title := c.Param("title")
+	IDs, err := h.usecase.GetTagsWithSameTitle(title,ctx)
+	if err != nil {
+		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
+			c.JSON(400, gin.H{
+				"error": "title cannot be empty",
 			})
 			return
 		}
@@ -277,10 +303,10 @@ func (h *TaxonomyHandler) GetTagsWithSameTitle(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	if IDs==nil {
-		c.JSON(200,gin.H{
-			"message":"no tags exist with this title",
+	if IDs == nil {
+		c.JSON(200, gin.H{
+			"message": "no tags exist with this title",
 		})
 	}
-	c.JSON(200,IDs)
+	c.JSON(200, IDs)
 }
