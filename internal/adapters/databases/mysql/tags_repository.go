@@ -208,26 +208,28 @@ func (r *MySQLTagRepository) DeleteTag(ID uint64,ctx context.Context) error{
 	if result.Error!=nil{
 		return result.Error
 	}
+	
 	if count==1 {
-		result=r.db.WithContext(ctx).Delete(&Tag{},ID)
-		if result.Error!=nil {
-			return result.Error
-		}
-
 		result=r.db.WithContext(ctx).Delete(&Tag{},parentTag.ID)
 		if result.Error!=nil {
 			return result.Error
 		}
-
-		result=r.db.WithContext(ctx).Where("from_tag=?",ID).Delete(&Taxonomy{})
-		if result.Error!=nil {
-			return result.Error
-		}
-		
-		result=r.db.WithContext(ctx).Where("to_tag=?",ID).Delete(&Taxonomy{})
-		if result.Error!=nil {
-			return result.Error
-		}
 	}
+
+	result=r.db.WithContext(ctx).Delete(&Tag{},ID)
+	if result.Error!=nil {
+		return result.Error
+	}
+
+	result=r.db.WithContext(ctx).Where("from_tag=?",ID).Delete(&Taxonomy{})
+	if result.Error!=nil {
+		return result.Error
+	}
+		
+	result=r.db.WithContext(ctx).Where("to_tag=?",ID).Delete(&Taxonomy{})
+	if result.Error!=nil {
+		return result.Error
+	}
+
 	return nil
 }
