@@ -10,35 +10,35 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric" 
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
 	// jaeger "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-	"go.opentelemetry.io/otel/metric"
+
 	// "go.opentelemetry.io/otel/trace"
 
-
 	"go.opentelemetry.io/otel/exporters/jaeger"
-
 )
 
 var port = flag.Int("port", 8080, "Port to run the HTTP server")
 
 func main() {
-	config.Ctx=context.Background()
+	config.Ctx = context.Background()
 
-	res,err:=resource.New(config.Ctx,
+	res, err := resource.New(config.Ctx,
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("tag_project"),
 		),
 	)
-	if err!=nil {
-		log.Printf("error creating resource:%v",err)
+	if err != nil {
+		log.Printf("error creating resource:%v", err)
 	}
 
-	metricExporter,err:=prometheus.New()
-	if err!=nil {
+	metricExporter, err := prometheus.New()
+	if err != nil {
 		log.Printf("error creating prometheus exporter: %v", err)
 	}
 
@@ -48,11 +48,11 @@ func main() {
 	// traceExporter,err:=jaeger.New(context.Background(),
 	// 	jaeger.WithEndpoint("http://localhost:14268/api/traces"),
 	// )
-	if err!=nil {
+	if err != nil {
 		log.Printf("error creating jaeger exporter: %v", err)
 	}
 
-	meterProvider:=sdkmetric.NewMeterProvider(
+	meterProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(metricExporter),
 		sdkmetric.WithResource(res),
 	)
@@ -62,7 +62,7 @@ func main() {
 		}
 	}()
 
-	tracerProvider:=sdktrace.NewTracerProvider(
+	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter),
 		sdktrace.WithResource(res),
 	)
@@ -75,8 +75,8 @@ func main() {
 	otel.SetMeterProvider(meterProvider)
 	otel.SetTracerProvider(tracerProvider)
 
-	meter:=otel.Meter("gin-metrics")
-	config.RequestsCounter,err=meter.Int64Counter(
+	meter := otel.Meter("gin-metrics")
+	config.RequestsCounter, err = meter.Int64Counter(
 		"requests_total",
 		metric.WithDescription("total number of requests"),
 	)
@@ -84,8 +84,7 @@ func main() {
 		log.Printf("error creating counter: %v", err)
 	}
 
-	config.Tracer=otel.Tracer("gin-tracer")
-
+	config.Tracer = otel.Tracer("gin-tracer")
 
 	mysql.InitialDatabase()
 
@@ -97,18 +96,6 @@ func main() {
 		log.Printf("could not start server:%v", err)
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // package main
 

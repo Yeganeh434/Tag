@@ -12,7 +12,7 @@ services:
       - db_data:/var/lib/mysql
 
   app:
-    build: .
+    build: .  #mire tooye current dir va docker file va oon image ro build mikone
     ports:
       - "8080:8080"
     depends_on:

@@ -7,6 +7,7 @@ import (
 	"tag_project/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func RunWebServer(port int) error {
@@ -22,6 +23,8 @@ func RunWebServer(port int) error {
 	taxonomyService := service.NewTaxonomyService(taxonomyRepo)
 	taxonomyManagementUseCase := usecases.NewTaxonomyManagementUseCase(taxonomyService)
 	taxonomyHandler := NewTaxonomyHandler(taxonomyManagementUseCase)
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	//tags management
 	router.POST("/register_approved_tag", tagHandler.RegisterApprovedTag)

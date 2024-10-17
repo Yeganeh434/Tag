@@ -33,6 +33,8 @@ type TagRelationship struct {
 }
 
 func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx := context.Background()
 	ctx, span := config.Tracer.Start(ctx, "RegisterTagRelationship_handler")
 	defer span.End()
@@ -99,6 +101,8 @@ func (h *TaxonomyHandler) RegisterTagRelationship(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"SetTagRelationship_handler")
 	defer span.End()
@@ -146,6 +150,8 @@ func (h *TaxonomyHandler) SetTagRelationship(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"GetRelatedTagsByKey_handler")
 	defer span.End()
@@ -197,6 +203,8 @@ func (h *TaxonomyHandler) GetRelatedTagsByKey(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"GetRelatedTagsByID_handler")
 	defer span.End()
@@ -231,6 +239,8 @@ func (h *TaxonomyHandler) GetRelatedTagsByID(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"SearchTagByTitle_handler")
 	defer span.End()
@@ -286,6 +296,8 @@ func (h *TaxonomyHandler) SearchTagByTitle(c *gin.Context) {
 }
 
 func (h *TaxonomyHandler) GetTagsWithSameTitle(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+	
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"GetTagsWithSameTitle_handler")
 	defer span.End()

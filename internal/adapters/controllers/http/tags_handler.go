@@ -42,6 +42,8 @@ type TagMerge struct {
 }
 
 func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx, span := config.Tracer.Start(ctx, "RegisterApprovedTag_handler")
 	defer span.End()
@@ -91,6 +93,8 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 }
 
 func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx, span := config.Tracer.Start(ctx, "RegisterTagAsDraft_handler")
 	defer span.End()
@@ -141,6 +145,8 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 }
 
 func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"ApproveOrRejectTag_handler")
 	defer span.End()
@@ -180,6 +186,8 @@ func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
 }
 
 func (h *TagHandler) MergeTags(c *gin.Context) {
+	config.RequestsCounter.Add(config.Ctx,1)
+	
 	ctx:=context.Background()
 	ctx,span:=config.Tracer.Start(ctx,"MergeTags_handler")
 	defer span.End()
