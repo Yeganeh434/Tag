@@ -29,3 +29,7 @@ func (uc *TagManagementUseCase) MergeTags(originalTagID uint64, mergeTagID uint6
 func (uc *TagManagementUseCase) IsKeyExist(key string, ctx context.Context) (bool, error) {
 	return uc.tagService.IsKeyExist(key,ctx)
 }
+
+func (uc *TagManagementUseCase) DeleteTag(ID uint64, ctx context.Context) error {
+	return uc.tagService.DeleteTag(ID,ctx)
+}

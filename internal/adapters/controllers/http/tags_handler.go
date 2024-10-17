@@ -42,9 +42,9 @@ type TagMerge struct {
 }
 
 func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
-	config.RequestsCounter.Add(config.Ctx,1)
+	config.RequestsCounter.Add(config.Ctx, 1)
 
-	ctx:=context.Background()
+	ctx := context.Background()
 	ctx, span := config.Tracer.Start(ctx, "RegisterApprovedTag_handler")
 	defer span.End()
 
@@ -69,7 +69,7 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "approved",
 	}
-	err = h.usecase.RegisterTag(tagInfo,ctx)
+	err = h.usecase.RegisterTag(tagInfo, ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
@@ -93,9 +93,9 @@ func (h *TagHandler) RegisterApprovedTag(c *gin.Context) {
 }
 
 func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
-	config.RequestsCounter.Add(config.Ctx,1)
+	config.RequestsCounter.Add(config.Ctx, 1)
 
-	ctx:=context.Background()
+	ctx := context.Background()
 	ctx, span := config.Tracer.Start(ctx, "RegisterTagAsDraft_handler")
 	defer span.End()
 
@@ -121,7 +121,7 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "under_review",
 	}
-	err = h.usecase.RegisterTag(tagInfo,ctx)  
+	err = h.usecase.RegisterTag(tagInfo, ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
@@ -145,10 +145,10 @@ func (h *TagHandler) RegisterTagAsDraft(c *gin.Context) {
 }
 
 func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
-	config.RequestsCounter.Add(config.Ctx,1)
+	config.RequestsCounter.Add(config.Ctx, 1)
 
-	ctx:=context.Background()
-	ctx,span:=config.Tracer.Start(ctx,"ApproveOrRejectTag_handler")
+	ctx := context.Background()
+	ctx, span := config.Tracer.Start(ctx, "ApproveOrRejectTag_handler")
 	defer span.End()
 
 	var requestBody TagStatus
@@ -162,7 +162,7 @@ func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
 	if requestBody.IsApproved {
 		isApproved = "approved"
 	}
-	err = h.usecase.UpdateTagStatus(requestBody.ID, isApproved,ctx)
+	err = h.usecase.UpdateTagStatus(requestBody.ID, isApproved, ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{
@@ -186,10 +186,10 @@ func (h *TagHandler) ApproveOrRejectTag(c *gin.Context) {
 }
 
 func (h *TagHandler) MergeTags(c *gin.Context) {
-	config.RequestsCounter.Add(config.Ctx,1)
-	
-	ctx:=context.Background()
-	ctx,span:=config.Tracer.Start(ctx,"MergeTags_handler")
+	config.RequestsCounter.Add(config.Ctx, 1)
+
+	ctx := context.Background()
+	ctx, span := config.Tracer.Start(ctx, "MergeTags_handler")
 	defer span.End()
 
 	var requestBody TagMerge
@@ -213,7 +213,7 @@ func (h *TagHandler) MergeTags(c *gin.Context) {
 		Key:         requestBody.Key,
 		Status:      "approved",
 	}
-	err = h.usecase.RegisterTag(tagInfo,ctx)    
+	err = h.usecase.RegisterTag(tagInfo, ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrTitleCannotBeEmpty) {
 			c.JSON(400, gin.H{
@@ -231,7 +231,7 @@ func (h *TagHandler) MergeTags(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = h.usecase.MergeTags(requestBody.OriginalTagID, tagInfo.ID,ctx)
+	err = h.usecase.MergeTags(requestBody.OriginalTagID, tagInfo.ID, ctx)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidTagID) {
 			c.JSON(400, gin.H{

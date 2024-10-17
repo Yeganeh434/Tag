@@ -185,3 +185,49 @@ func (r *MySQLTagRepository) IsKeyExist(key string,ctx context.Context) (bool, e
 	}
 	return true, nil
 }
+
+func (r *MySQLTagRepository) DeleteTag(ID uint64,ctx context.Context) error{
+	ctx,span:=config.Tracer.Start(ctx,"DeleteTag_database")
+	span.End()
+
+	var tag Tag
+	result:=r.db.WithContext(ctx).Where("id=?",ID).Find(&tag)
+	if result.Error!=nil {
+		return result.Error
+	}
+
+	var parentTag Tag
+	title:="MainNode_"+tag.Title
+	result=r.db.WithContext(ctx).Where("title=?",title).Find(&parentTag)
+	if result.Error!=nil{
+		return result.Error
+	}
+
+	var count int64
+	result=r.db.WithContext(ctx).Where("from_tag=?",parentTag.ID).Count(&count)
+	if result.Error!=nil{
+		return result.Error
+	}
+	if count==1 {
+		result=r.db.WithContext(ctx).Delete(&Tag{},ID)
+		if result.Error!=nil {
+			return result.Error
+		}
+
+		result=r.db.WithContext(ctx).Delete(&Tag{},parentTag.ID)
+		if result.Error!=nil {
+			return result.Error
+		}
+
+		result=r.db.WithContext(ctx).Where("from_tag=?",ID).Delete(&Taxonomy{})
+		if result.Error!=nil {
+			return result.Error
+		}
+		
+		result=r.db.WithContext(ctx).Where("to_tag=?",ID).Delete(&Taxonomy{})
+		if result.Error!=nil {
+			return result.Error
+		}
+	}
+	return nil
+}
