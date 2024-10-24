@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"log"
 	"service1/internal/application/usecases"
 	"service1/internal/config"
 	"service1/internal/domain/entity"
@@ -215,11 +214,8 @@ func (r *MySQLTagRepository) DeleteTag(ID uint64, ctx context.Context) (entity.T
 		return tagEntity, result.Error
 	}
 
-	var count int64      
+	var count int64
 	result = r.db.WithContext(ctx).Model(&Taxonomy{}).Where("from_tag=?", parentTag.ID).Count(&count)
-	log.Println("ctx is:", ctx)
-	log.Println("parent tag id:", parentTag.ID)
-	log.Println("the count is:", count)
 	if result.Error != nil {
 		return tagEntity, result.Error
 	}
@@ -229,7 +225,7 @@ func (r *MySQLTagRepository) DeleteTag(ID uint64, ctx context.Context) (entity.T
 		if result.Error != nil {
 			return tagEntity, result.Error
 		}
-		result=r.db.WithContext(ctx).Where("to_tag=?",parentTag.ID).Delete(&Taxonomy{})
+		result = r.db.WithContext(ctx).Where("to_tag=?", parentTag.ID).Delete(&Taxonomy{})
 		if result.Error != nil {
 			return tagEntity, result.Error
 		}

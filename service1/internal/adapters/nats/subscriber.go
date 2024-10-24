@@ -19,6 +19,11 @@ type Tag struct {
 	Title string `json:"title"`
 }
 
+type CustomError struct{
+	Code int `json:"code"`
+	Error string `json:"error"`
+}
+
 func Subscribe() {
 	tagRepo := mysql.NewMySQLTagRepository(mysql.TagDB.DB)
 	tagService := service.NewTagService(tagRepo)
@@ -35,44 +40,88 @@ func Subscribe() {
 	}
 	defer nc.Close()
 
-	js, err := nc.JetStream()
-	if err != nil {
-		log.Printf("error connecting jetStream:%v", err)
-		return
-	}
+	// js, err := nc.JetStream()
+	// if err != nil {
+	// 	log.Printf("error connecting jetStream:%v", err)
+	// 	return
+	// }
 
-	_, err = js.Subscribe("events.EditTag", func(msg *nats.Msg) {
+	_,err = nc.Subscribe("EditTag", func(msg *nats.Msg) {  //jetstream: "events.EditTag"
+		var customError CustomError
 		var data Tag
 		err := json.Unmarshal(msg.Data, &data)
 		if err != nil {
+			customError.Code=400
+			response,errState:=json.Marshal(customError)
+			if errState!=nil{
+				log.Printf("error marshaling:%v",errState)
+				return
+			}
+			errState=msg.Respond(response)
+			if errState!=nil{
+				log.Printf("error sending response:%v",errState)
+				return
+			}
 			log.Printf("error unmarshaling:%v", err)
 			return
 		}
 		tag, err := tagManagementUseCase.DeleteTag(data.ID, ctx)
 		if err != nil {
 			if errors.Is(err, service.ErrNoTagExistsWithThisID) {
-				log.Printf("error:%v", err)
+				customError.Error="no tag exist with this ID"
+			}
+			customError.Code=400
+			response,errState:=json.Marshal(customError)
+			if errState!=nil{
+				log.Printf("error marshaling:%v",errState)
+				return
+			}
+			errState=msg.Respond(response) 
+			if errState!=nil{
+				log.Printf("error sending response:%v",errState)
 				return
 			}
 			log.Printf("error deleting tag:%v", err)
 			return
 		}
-		log.Println("tag deleted successfully!") //////////////////////////////////////////////
 
 		tag.Title = data.Title
 		err = tagManagementUseCase.RegisterTag(tag, ctx)
 		if err != nil {
+			customError.Code=400
+			response,errState:=json.Marshal(customError)
+			if errState!=nil{
+				log.Printf("error marshaling:%v",errState)
+				return
+			}
+			errState=msg.Respond(response)
+			if errState!=nil{
+				log.Printf("error sending response:%v",errState)
+				return
+			}
 			log.Printf("error registering tag:%v", err)
 			return
 		}
-		log.Println("tag registered successfully!") //////////////////////////////////////////////
 
-		err = msg.Ack()
-		if err != nil {
-			log.Printf("error acknowledging message: %v", err)
+		customError.Code=200
+		response,errState:=json.Marshal(customError)
+		if errState!=nil{
+			log.Printf("error marshaling:%v",errState)
 			return
 		}
-	}, nats.Durable("tag_proj_consumer"))
+		errState=msg.Respond(response)
+		if errState!=nil{
+			log.Printf("error sending response:%v",errState)
+			return
+		}
+
+		//jetstream:
+		// err = msg.Ack()
+		// if err != nil {
+		// 	log.Printf("error acknowledging message: %v", err)
+		// 	return
+		// }
+	}) //jetstream: nats.Durable("tag_proj_consumer")
 	if err != nil {
 		log.Printf("error subscribing: %v", err)
 		return
