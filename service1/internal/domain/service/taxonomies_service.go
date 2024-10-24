@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/repository"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/repository"
 )
 
 var ErrInvalidRelationshipType = errors.New("invalid relationship type")
@@ -40,7 +40,7 @@ func (s *taxonomyService) RegisterTagRelationship(taxonomyInfo entity.TaxonomyEn
 			return ErrInvalidRelationshipType
 		}
 	}
-	return s.taxonomyRepo.RegisterTagRelationship(taxonomyInfo,ctx)
+	return s.taxonomyRepo.RegisterTagRelationship(taxonomyInfo, ctx)
 }
 
 func (s *taxonomyService) SaveTagRelationship(ID uint64, relationshipType string, ctx context.Context) error {
@@ -54,7 +54,7 @@ func (s *taxonomyService) SaveTagRelationship(ID uint64, relationshipType string
 		return ErrInvalidRelationshipType
 	}
 
-	return s.taxonomyRepo.SaveTagRelationship(ID, relationshipType,ctx)
+	return s.taxonomyRepo.SaveTagRelationship(ID, relationshipType, ctx)
 }
 
 func (s *taxonomyService) GetIDByKey(key string, ctx context.Context) (uint64, error) {
@@ -62,7 +62,7 @@ func (s *taxonomyService) GetIDByKey(key string, ctx context.Context) (uint64, e
 		return 0, ErrKeyCannotBeEmpty
 	}
 
-	return s.taxonomyRepo.GetIDByKey(key,ctx)
+	return s.taxonomyRepo.GetIDByKey(key, ctx)
 }
 
 func (s *taxonomyService) GetRelatedTagsByID(ID uint64, ctx context.Context) ([]uint64, error) {
@@ -70,7 +70,7 @@ func (s *taxonomyService) GetRelatedTagsByID(ID uint64, ctx context.Context) ([]
 		return nil, ErrInvalidTagID
 	}
 
-	return s.taxonomyRepo.GetRelatedTagsByID(ID,ctx)
+	return s.taxonomyRepo.GetRelatedTagsByID(ID, ctx)
 }
 
 func (s *taxonomyService) GetIDsByTitle(title string, ctx context.Context) ([]uint64, error) {
@@ -78,7 +78,7 @@ func (s *taxonomyService) GetIDsByTitle(title string, ctx context.Context) ([]ui
 		return nil, ErrTitleCannotBeEmpty
 	}
 
-	return s.taxonomyRepo.GetIDsByTitle(title,ctx)
+	return s.taxonomyRepo.GetIDsByTitle(title, ctx)
 }
 
 func (s *taxonomyService) GetTagsWithSameTitle(title string, ctx context.Context) ([]uint64, error) {
@@ -86,5 +86,5 @@ func (s *taxonomyService) GetTagsWithSameTitle(title string, ctx context.Context
 		return nil, ErrTitleCannotBeEmpty
 	}
 
-	return s.taxonomyRepo.GetTagsWithSameTitle(title,ctx)
+	return s.taxonomyRepo.GetTagsWithSameTitle(title, ctx)
 }

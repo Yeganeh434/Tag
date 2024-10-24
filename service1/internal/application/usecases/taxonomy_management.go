@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"context"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/service"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/service"
 )
 
 type TaxonomyManagementUseCase struct {

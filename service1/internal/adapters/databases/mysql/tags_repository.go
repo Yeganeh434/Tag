@@ -2,11 +2,12 @@ package mysql
 
 import (
 	"context"
-	"tag_project/internal/application/usecases"
-	"tag_project/internal/config"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/repository"
-	"tag_project/internal/domain/service"
+	"log"
+	"service1/internal/application/usecases"
+	"service1/internal/config"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/repository"
+	"service1/internal/domain/service"
 
 	// "go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
@@ -111,8 +112,8 @@ func (r *MySQLTagRepository) RegisterTag(tagInfo entity.TagEntity, ctx context.C
 	return nil
 }
 
-func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string,ctx context.Context) error {
-	ctx,span:=config.Tracer.Start(ctx,"UpdateTagStatus_database")
+func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string, ctx context.Context) error {
+	ctx, span := config.Tracer.Start(ctx, "UpdateTagStatus_database")
 	defer span.End()
 
 	var tag Tag
@@ -131,8 +132,8 @@ func (r *MySQLTagRepository) UpdateTagStatus(ID uint64, isApproved string,ctx co
 	return nil
 }
 
-func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64,ctx context.Context) error {
-	ctx,span:=config.Tracer.Start(ctx,"MergeTags_database")
+func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64, ctx context.Context) error {
+	ctx, span := config.Tracer.Start(ctx, "MergeTags_database")
 	span.End()
 
 	var tag Tag
@@ -171,8 +172,8 @@ func (r *MySQLTagRepository) MergeTags(originalTagID uint64, mergeTagID uint64,c
 	return nil
 }
 
-func (r *MySQLTagRepository) IsKeyExist(key string,ctx context.Context) (bool, error) {
-	ctx,span:=config.Tracer.Start(ctx,"IsKeyExist_database")
+func (r *MySQLTagRepository) IsKeyExist(key string, ctx context.Context) (bool, error) {
+	ctx, span := config.Tracer.Start(ctx, "IsKeyExist_database")
 	span.End()
 
 	var tag Tag
@@ -186,50 +187,68 @@ func (r *MySQLTagRepository) IsKeyExist(key string,ctx context.Context) (bool, e
 	return true, nil
 }
 
-func (r *MySQLTagRepository) DeleteTag(ID uint64,ctx context.Context) error{
-	ctx,span:=config.Tracer.Start(ctx,"DeleteTag_database")
+func (r *MySQLTagRepository) DeleteTag(ID uint64, ctx context.Context) (entity.TagEntity, error) {
+	ctx, span := config.Tracer.Start(ctx, "DeleteTag_database")
 	span.End()
 
 	var tag Tag
-	result:=r.db.WithContext(ctx).Where("id=?",ID).Find(&tag)
-	if result.Error!=nil {
-		return result.Error
+	result := r.db.WithContext(ctx).Where("id=?", ID).Find(&tag)
+	tagEntity := entity.TagEntity{
+		ID:          tag.ID,
+		Title:       tag.Title,
+		Description: tag.Description,
+		Picture:     tag.Picture,
+		Key:         tag.Key,
+		Status:      tag.Status,
+	}
+	if result.Error != nil {
+		return tagEntity, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return tagEntity, service.ErrNoTagExistsWithThisID
 	}
 
 	var parentTag Tag
-	title:="MainNode_"+tag.Title
-	result=r.db.WithContext(ctx).Where("title=?",title).Find(&parentTag)
-	if result.Error!=nil{
-		return result.Error
+	title := "MainNode_" + tag.Title
+	result = r.db.WithContext(ctx).Where("title=?", title).Find(&parentTag)
+	if result.Error != nil {
+		return tagEntity, result.Error
 	}
 
-	var count int64
-	result=r.db.WithContext(ctx).Where("from_tag=?",parentTag.ID).Count(&count)
-	if result.Error!=nil{
-		return result.Error
+	var count int64      
+	result = r.db.WithContext(ctx).Model(&Taxonomy{}).Where("from_tag=?", parentTag.ID).Count(&count)
+	log.Println("ctx is:", ctx)
+	log.Println("parent tag id:", parentTag.ID)
+	log.Println("the count is:", count)
+	if result.Error != nil {
+		return tagEntity, result.Error
 	}
-	
-	if count==1 {
-		result=r.db.WithContext(ctx).Delete(&Tag{},parentTag.ID)
-		if result.Error!=nil {
-			return result.Error
+
+	if count == 1 {
+		result = r.db.WithContext(ctx).Delete(&Tag{}, parentTag.ID)
+		if result.Error != nil {
+			return tagEntity, result.Error
+		}
+		result=r.db.WithContext(ctx).Where("to_tag=?",parentTag.ID).Delete(&Taxonomy{})
+		if result.Error != nil {
+			return tagEntity, result.Error
 		}
 	}
 
-	result=r.db.WithContext(ctx).Delete(&Tag{},ID)
-	if result.Error!=nil {
-		return result.Error
+	result = r.db.WithContext(ctx).Delete(&Tag{}, ID)
+	if result.Error != nil {
+		return tagEntity, result.Error
 	}
 
-	result=r.db.WithContext(ctx).Where("from_tag=?",ID).Delete(&Taxonomy{})
-	if result.Error!=nil {
-		return result.Error
-	}
-		
-	result=r.db.WithContext(ctx).Where("to_tag=?",ID).Delete(&Taxonomy{})
-	if result.Error!=nil {
-		return result.Error
+	result = r.db.WithContext(ctx).Where("from_tag=?", ID).Delete(&Taxonomy{})
+	if result.Error != nil {
+		return tagEntity, result.Error
 	}
 
-	return nil
+	result = r.db.WithContext(ctx).Where("to_tag=?", ID).Delete(&Taxonomy{})
+	if result.Error != nil {
+		return tagEntity, result.Error
+	}
+
+	return tagEntity, nil
 }

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"tag_project/internal/domain/entity"
+	"service1/internal/domain/entity"
 )
 
 type TaxonomyRepository interface {

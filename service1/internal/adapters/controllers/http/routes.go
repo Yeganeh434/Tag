@@ -2,9 +2,9 @@ package http
 
 import (
 	"strconv"
-	"tag_project/internal/adapters/databases/mysql"
-	"tag_project/internal/application/usecases"
-	"tag_project/internal/domain/service"
+	"service1/internal/adapters/databases/mysql"
+	"service1/internal/application/usecases"
+	"service1/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

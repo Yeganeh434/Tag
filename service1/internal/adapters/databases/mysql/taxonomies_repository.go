@@ -2,10 +2,10 @@ package mysql
 
 import (
 	"context"
-	"tag_project/internal/config"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/repository"
-	"tag_project/internal/domain/service"
+	"service1/internal/config"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/repository"
+	"service1/internal/domain/service"
 
 	"gorm.io/gorm"
 )

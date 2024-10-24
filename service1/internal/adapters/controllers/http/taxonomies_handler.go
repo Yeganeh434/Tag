@@ -5,10 +5,10 @@ import (
 	"errors"
 	"log"
 	"strconv"
-	"tag_project/internal/application/usecases"
-	"tag_project/internal/config"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/service"
+	"service1/internal/application/usecases"
+	"service1/internal/config"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 )

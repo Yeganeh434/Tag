@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"context"
-	"tag_project/internal/domain/entity"
-	"tag_project/internal/domain/service"
+	"service1/internal/domain/entity"
+	"service1/internal/domain/service"
 )
 
 type TagManagementUseCase struct {
@@ -30,6 +30,6 @@ func (uc *TagManagementUseCase) IsKeyExist(key string, ctx context.Context) (boo
 	return uc.tagService.IsKeyExist(key,ctx)
 }
 
-func (uc *TagManagementUseCase) DeleteTag(ID uint64, ctx context.Context) error {
+func (uc *TagManagementUseCase) DeleteTag(ID uint64, ctx context.Context) (entity.TagEntity,error) {
 	return uc.tagService.DeleteTag(ID,ctx)
 }

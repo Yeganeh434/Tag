@@ -1,6 +1,6 @@
 package mysql
 
-import "tag_project/internal/domain/entity"
+import "service1/internal/domain/entity"
 
 type Tag struct {
 	ID          uint64 `gorm:"primary_key"`
